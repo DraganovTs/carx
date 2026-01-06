@@ -1,0 +1,7 @@
+<nav *ngIf="isLoggedIn">
+  <a routerLink="/dashboard">Dashboard</a>
+  <a routerLink="/profile">Profile</a>
+  <button (click)="logout()">Logout</button>
+</nav>
+
+<router-outlet></router-outlet>
