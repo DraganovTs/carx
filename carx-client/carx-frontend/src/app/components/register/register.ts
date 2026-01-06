@@ -1,8 +1,8 @@
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { RouterModule } from '@angular/router';
-import { UserService } from '../../services/user';
+import { Router, RouterModule } from '@angular/router';
+import { AuthResponse, RegisterRequest, UserService } from '../../services/user';
 
 @Component({
   selector: 'app-register',
@@ -12,21 +12,49 @@ import { UserService } from '../../services/user';
   styleUrls: ['./register.css']
 })
 export class Register {
-  user = {
+  user: RegisterRequest = {
     email: '',
-    username: '',
-    password: ''
+    password: '',
+    firstName: '',
+    lastName: '',
+    phone: '',
+    role: 'BUYER'
   };
-  
-  constructor(private userService: UserService) {}
-  
+
+  roles = ['BUYER', 'SELLER', 'ADMIN'];
+  isLoading = false;
+  errorMessage = '';
+  successMessage = '';
+
+  constructor(
+    private userService: UserService,
+    private router: Router
+  ) {}
+
   onSubmit() {
+    this.isLoading = true;
+    this.errorMessage = '';
+    this.successMessage = '';
+
+    // Remove phone if empty
+    if (!this.user.phone) {
+      delete this.user.phone;
+    }
+
     this.userService.register(this.user).subscribe({
-      next: (response) => {
-        console.log('Registration successful', response);
+      next: (response: AuthResponse) => {
+        this.isLoading = false;
+        this.successMessage = response.message;
+        
+        // Redirect to login after successful registration
+        setTimeout(() => {
+          this.router.navigate(['/login']);
+        }, 2000);
       },
-      error: (error) => {
-        console.error('Registration failed', error);
+      error: (error: any) => {
+        this.isLoading = false;
+        this.errorMessage = error.error?.message || 'Registration failed. Please try again.';
+        console.error('Registration error:', error);
       }
     });
   }
