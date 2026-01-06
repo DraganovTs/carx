@@ -1,5 +1,10 @@
 package org.homecodecarx.user.service.controller;
 
+import jakarta.validation.Valid;
+import org.homecodecarx.user.service.model.dto.AuthResponse;
+import org.homecodecarx.user.service.model.dto.RegisterRequest;
+import org.homecodecarx.user.service.model.entity.User;
+import org.homecodecarx.user.service.service.UserService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -9,9 +14,33 @@ import java.util.UUID;
 @RequestMapping("/users")
 public class UserController {
 
+    private final UserService userService;
+
+    public UserController(UserService userService) {
+        this.userService = userService;
+    }
+
     @PostMapping("/register")
-    public ResponseEntity<?> register() {
-        return ResponseEntity.ok().build();
+    public ResponseEntity<AuthResponse> register(@Valid @RequestBody RegisterRequest request) {
+
+        try {
+            User user = userService.register(request);
+
+            AuthResponse response = AuthResponse.builder()
+                    .message("User registered successfully")
+                    .email(user.getEmail())
+                    .userId(user.getId().toString())
+                    .token("dummy-token")
+                    .build();
+
+            return ResponseEntity.ok(response);
+        } catch (RuntimeException e) {
+            AuthResponse errorResponse = AuthResponse.builder()
+                    .message(e.getMessage())
+                    .build();
+            return ResponseEntity.badRequest().body(errorResponse);
+        }
+
     }
 
     @PostMapping("/login")
