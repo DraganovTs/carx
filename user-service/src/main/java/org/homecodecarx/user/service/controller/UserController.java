@@ -2,8 +2,8 @@ package org.homecodecarx.user.service.controller;
 
 import jakarta.validation.Valid;
 import org.homecodecarx.user.service.model.dto.AuthResponse;
+import org.homecodecarx.user.service.model.dto.LoginRequest;
 import org.homecodecarx.user.service.model.dto.RegisterRequest;
-import org.homecodecarx.user.service.model.entity.User;
 import org.homecodecarx.user.service.service.UserService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -23,13 +23,16 @@ public class UserController {
 
     @PostMapping("/register")
     public ResponseEntity<AuthResponse> register(@Valid @RequestBody RegisterRequest request) {
-            AuthResponse response = userService.register(request);
-            return new ResponseEntity<>(response, HttpStatus.CREATED);
+        AuthResponse response = userService.register(request);
+        return new ResponseEntity<>(response, HttpStatus.CREATED);
     }
 
     @PostMapping("/login")
-    public ResponseEntity<?> login() {
-        return ResponseEntity.ok().build();
+    public ResponseEntity<AuthResponse> login(@Valid @RequestBody LoginRequest request) {
+
+        AuthResponse response = userService.authenticate(request);
+
+        return ResponseEntity.ok(response);
     }
 
     @GetMapping("/{id}")

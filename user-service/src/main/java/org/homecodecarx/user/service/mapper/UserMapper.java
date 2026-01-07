@@ -4,7 +4,6 @@ import org.homecodecarx.user.service.model.dto.AuthResponse;
 import org.homecodecarx.user.service.model.dto.RegisterRequest;
 import org.homecodecarx.user.service.model.entity.User;
 import org.homecodecarx.user.service.model.enums.Role;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 
 import java.util.UUID;
@@ -22,12 +21,12 @@ public class UserMapper {
                 .build();
     }
 
-    public AuthResponse mapUserToAuthResponse(User user) {
+    public AuthResponse mapUserToAuthResponse(User user , String message , String token ) {
         return AuthResponse.builder()
                 .userId(user.getId().toString())
                 .email(user.getEmail())
-                .token("dummy-token")
-                .message("User registered successfully")
+                .message(message)
+                .token(token)
                 .build();
     }
 }
