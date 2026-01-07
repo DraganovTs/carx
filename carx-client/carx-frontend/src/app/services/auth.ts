@@ -7,6 +7,7 @@ import { BehaviorSubject } from 'rxjs';
 })
 export class AuthService {
   private loggedIn = new BehaviorSubject<boolean>(this.hasToken());
+  
 
   get isLoggedIn$() {
     return this.loggedIn.asObservable();
@@ -23,19 +24,25 @@ export class AuthService {
     return this.hasToken();
   }
 
-  login(token: string): void {
+  login(token: string, email: string): void {
     localStorage.setItem('token', token);
+    localStorage.setItem('userEmail', email);
     this.loggedIn.next(true);
     this.router.navigate(['/dashboard']);
   }
 
   logout(): void {
     localStorage.removeItem('token');
+    localStorage.removeItem('userEmail');
     this.loggedIn.next(false);
     this.router.navigate(['/login']);
   }
 
   getToken(): string | null {
     return localStorage.getItem('token');
+  }
+
+  getEmail(): string | null {
+    return localStorage.getItem('userEmail');
   }
 }

@@ -1,9 +1,9 @@
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { RouterModule } from '@angular/router';
+import { Router, RouterModule } from '@angular/router';
 import { AuthService } from '../../services/auth';
-import { UserService } from '../../services/user';
+import { AuthResponse, LoginRequest, UserService } from '../../services/user';
 
 
 @Component({
@@ -14,24 +14,42 @@ import { UserService } from '../../services/user';
   styleUrls: ['./login.css']
 })
 export class Login {
-  credentials = {
+  credentials: LoginRequest = {
     email: '',
     password: ''
   };
   errorMessage = '';
+  isLoading = false; 
 
   constructor(
     private userService: UserService,
-    private authService: AuthService
+    private authService: AuthService,
+    private router: Router
   ) {}
 
   onSubmit() {
+    this.isLoading = true;
+    this.errorMessage = '';
+
+    if (!this.credentials.email || !this.credentials.password) {
+      this.errorMessage = 'Please enter email and password';
+      this.isLoading = false;
+      return;
+    }
+
     this.userService.login(this.credentials).subscribe({
-      next: (response: any) => {
-        this.authService.login(response.token);
+      next: (response: AuthResponse) => {
+        this.isLoading = false;
+        this.authService.login(response.token, response.email);
       },
       error: (error) => {
-        this.errorMessage = 'Invalid credentials';
+        this.isLoading = false;
+        if (error.status === 401 || error.status === 400) {
+          this.errorMessage = error.error?.message || 'Invalid email or password';
+        } else {
+          this.errorMessage = 'Login failed. Please try again.';
+        }
+        console.error('Login error:', error);
       }
     });
   }

@@ -42,7 +42,7 @@ public class UserService {
         }
 
         User user = userMapper.mapUserRequestToUser(request);
-        user.setPassword(passwordEncoder.encode(user.getPassword()));
+        user.setPassword(passwordEncoder.encode(request.getPassword()));
 
         userRepository.save(user);
 
