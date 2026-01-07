@@ -1,6 +1,7 @@
 package org.homecodecarx.user.service.service;
 
 import jakarta.transaction.Transactional;
+import org.homecodecarx.user.service.exception.UserAlreadyExistException;
 import org.homecodecarx.user.service.mapper.UserMapper;
 import org.homecodecarx.user.service.model.dto.RegisterRequest;
 import org.homecodecarx.user.service.model.entity.User;
@@ -25,7 +26,7 @@ public class UserService {
     public User register(RegisterRequest request) {
 
         if (userRepository.existsByEmail(request.getEmail())) {
-            throw new RuntimeException("User already exists with email: " + request.getEmail());
+            throw new UserAlreadyExistException("User already exists with email: " + request.getEmail());
         }
 
         User user = userMapper.mapUserRequestToUser(request);

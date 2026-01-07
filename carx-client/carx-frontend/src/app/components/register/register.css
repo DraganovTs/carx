@@ -2,15 +2,24 @@
   max-width: 500px;
   margin: 2rem auto;
   padding: 2rem;
-  background: #fff;
-  border-radius: 8px;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  background: #ffffff;
+  border-radius: 12px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+  font-family: 'Poppins', sans-serif;
+  border-top: 6px solid transparent;
+  background-image: linear-gradient(#fff, #fff),
+    linear-gradient(90deg, #007bff, #00d4ff);
+  background-origin: border-box;
+  background-clip: padding-box, border-box;
 }
 
 h2 {
   text-align: center;
-  color: #333;
-  margin-bottom: 1.5rem;
+  color: #222;
+  margin-bottom: 1.2rem;
+  font-size: 1.8rem;
+  font-weight: 600;
+  letter-spacing: 0.5px;
 }
 
 .form-row {
@@ -29,23 +38,27 @@ h2 {
 
 label {
   display: block;
-  margin-bottom: 0.5rem;
-  color: #555;
-  font-weight: 500;
+  margin-bottom: 0.4rem;
+  color: #444;
+  font-weight: 600;
+  font-size: 0.95rem;
 }
 
 input, select {
   width: 100%;
-  padding: 0.75rem;
-  border: 1px solid #ddd;
-  border-radius: 4px;
+  padding: 0.85rem;
+  border: 2px solid #e8e8e8;
+  border-radius: 8px;
   font-size: 1rem;
-  transition: border-color 0.3s;
+  transition: 0.3s ease;
+  background: #f9f9fc;
 }
 
 input:focus, select:focus {
   outline: none;
   border-color: #007bff;
+  background: #fff;
+  box-shadow: 0 0 0 4px rgba(0, 123, 255, 0.12);
 }
 
 .role-select {
@@ -54,57 +67,71 @@ input:focus, select:focus {
 
 .submit-btn {
   width: 100%;
-  padding: 0.75rem;
-  background: #007bff;
+  padding: 0.85rem;
+  background: linear-gradient(90deg, #007bff, #00c6ff);
   color: white;
   border: none;
-  border-radius: 4px;
-  font-size: 1rem;
-  font-weight: 500;
+  border-radius: 8px;
+  font-size: 1.1rem;
+  font-weight: 600;
   cursor: pointer;
-  transition: background 0.3s;
+  transition: 0.3s;
 }
 
 .submit-btn:hover:not(:disabled) {
-  background: #0056b3;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 18px rgba(0, 123, 255, 0.25);
 }
 
 .submit-btn:disabled {
-  background: #ccc;
+  background: #bdbdbd;
   cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+.success-message, .error-message {
+  padding: 0.8rem;
+  border-radius: 8px;
+  margin-bottom: 1rem;
+  text-align: center;
+  font-weight: 600;
+  animation: fadeIn 0.4s ease-in;
 }
 
 .success-message {
-  background: #d4edda;
-  color: #155724;
-  padding: 0.75rem;
-  border-radius: 4px;
-  margin-bottom: 1rem;
-  text-align: center;
+  background: #e3fcec;
+  color: #0f5132;
+  border-left: 5px solid #28a745;
 }
 
 .error-message {
-  background: #f8d7da;
-  color: #721c24;
-  padding: 0.75rem;
-  border-radius: 4px;
-  margin-bottom: 1rem;
-  text-align: center;
+  background: #fde7e9;
+  color: #842029;
+  border-left: 5px solid #dc3545;
 }
 
 .login-link {
   text-align: center;
-  margin-top: 1rem;
-  color: #666;
+  margin-top: 1.2rem;
+  color: #555;
+  font-size: 0.95rem;
 }
 
 .login-link a {
   color: #007bff;
+  font-weight: 600;
   text-decoration: none;
 }
 
 .login-link a:hover {
   text-decoration: underline;
+}
+
+/* Animation */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 
 /* Responsive */
@@ -113,7 +140,6 @@ input:focus, select:focus {
     margin: 1rem;
     padding: 1.5rem;
   }
-  
   .form-row {
     flex-direction: column;
     gap: 0;

@@ -1,0 +1,118 @@
+.login-container {
+  max-width: 450px;
+  margin: 3rem auto;
+  padding: 2rem;
+  background: #ffffff;
+  border-radius: 12px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.07);
+  font-family: 'Poppins', sans-serif;
+  border-top: 6px solid transparent;
+  background-image: linear-gradient(#fff, #fff),
+    linear-gradient(90deg, #007bff, #00d4ff);
+  background-origin: border-box;
+  background-clip: padding-box, border-box;
+}
+
+.login-container h2 {
+  text-align: center;
+  color: #222;
+  margin-bottom: 1rem;
+  font-size: 1.8rem;
+  font-weight: 600;
+}
+
+.form-group {
+  margin-bottom: 1rem;
+}
+
+label {
+  display: block;
+  margin-bottom: 0.4rem;
+  color: #444;
+  font-weight: 600;
+  font-size: 0.95rem;
+}
+
+input {
+  width: 100%;
+  padding: 0.85rem;
+  border: 2px solid #e8e8e8;
+  border-radius: 8px;
+  font-size: 1rem;
+  background: #f9f9fc;
+  transition: 0.3s;
+}
+
+input:focus {
+  outline: none;
+  border-color: #007bff;
+  background: #fff;
+  box-shadow: 0 0 0 4px rgba(0, 123, 255, 0.12);
+}
+
+button {
+  width: 100%;
+  padding: 0.85rem;
+  background: linear-gradient(90deg, #007bff, #00c6ff);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 1.1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: 0.3s;
+}
+
+button:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 18px rgba(0, 123, 255, 0.28);
+}
+
+button:disabled {
+  background: #bbb;
+  cursor: not-allowed;
+  box-shadow: none;
+  transform: none;
+}
+
+.error-message {
+  background: #fde7e9;
+  color: #842029;
+  padding: 0.8rem;
+  border-radius: 8px;
+  margin-bottom: 1rem;
+  text-align: center;
+  font-weight: 600;
+  border-left: 5px solid #dc3545;
+  animation: fadeIn 0.3s ease-in;
+}
+
+.login-container p {
+  text-align: center;
+  margin-top: 1rem;
+  color: #555;
+  font-size: 0.95rem;
+}
+
+.login-container a {
+  color: #007bff;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.login-container a:hover {
+  text-decoration: underline;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(5px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Responsive */
+@media (max-width: 576px) {
+  .login-container {
+    margin: 1.5rem;
+    padding: 1.5rem;
+  }
+}

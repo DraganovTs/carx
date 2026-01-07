@@ -1,99 +1,51 @@
 <div class="register-container">
-  <h2>Create Account</h2>
-  
+  <h2>Create Your Account</h2>
+  <p class="login-link">Join us and start your journey 🚀</p>
+
   <form (ngSubmit)="onSubmit()" #registerForm="ngForm">
     
     <div class="form-row">
       <div class="form-group">
         <label for="firstName">First Name *</label>
-        <input 
-          type="text" 
-          id="firstName" 
-          [(ngModel)]="user.firstName" 
-          name="firstName" 
-          required
-          placeholder="Enter your first name">
+        <input type="text" id="firstName" [(ngModel)]="user.firstName" name="firstName" required placeholder="Enter your first name">
       </div>
-      
+
       <div class="form-group">
         <label for="lastName">Last Name *</label>
-        <input 
-          type="text" 
-          id="lastName" 
-          [(ngModel)]="user.lastName" 
-          name="lastName" 
-          required
-          placeholder="Enter your last name">
+        <input type="text" id="lastName" [(ngModel)]="user.lastName" name="lastName" required placeholder="Enter your last name">
       </div>
     </div>
-    
+
     <div class="form-group">
       <label for="email">Email *</label>
-      <input 
-        type="email" 
-        id="email" 
-        [(ngModel)]="user.email" 
-        name="email" 
-        required
-        email
-        placeholder="Enter your email">
+      <input type="email" id="email" [(ngModel)]="user.email" name="email" required email placeholder="Enter your email">
     </div>
-    
+
     <div class="form-group">
       <label for="password">Password *</label>
-      <input 
-        type="password" 
-        id="password" 
-        [(ngModel)]="user.password" 
-        name="password" 
-        required
-        minlength="6"
-        placeholder="Enter password (min 6 characters)">
+      <input type="password" id="password" [(ngModel)]="user.password" name="password" required minlength="6" placeholder="Enter password (min 6 characters)">
     </div>
-    
+
     <div class="form-group">
       <label for="phone">Phone Number</label>
-      <input 
-        type="tel" 
-        id="phone" 
-        [(ngModel)]="user.phone" 
-        name="phone"
-        placeholder="Enter your phone number">
+      <input type="tel" id="phone" [(ngModel)]="user.phone" name="phone" placeholder="Enter your phone number">
     </div>
-    
+
     <div class="form-group">
       <label for="role">Account Type</label>
-      <select 
-        id="role" 
-        [(ngModel)]="user.role" 
-        name="role"
-        class="role-select">
-        <option *ngFor="let role of roles" [value]="role">
-          {{ role }}
-        </option>
+      <select id="role" [(ngModel)]="user.role" name="role" class="role-select">
+        <option *ngFor="let role of roles" [value]="role">{{ role }}</option>
       </select>
     </div>
-    
-    <!-- Success Message -->
-    <div *ngIf="successMessage" class="success-message">
-      {{ successMessage }}
-    </div>
-    
-    <!-- Error Message -->
-    <div *ngIf="errorMessage" class="error-message">
-      {{ errorMessage }}
-    </div>
-    
-    <button 
-      type="submit" 
-      [disabled]="!registerForm.valid || isLoading"
-      class="submit-btn">
+
+    <div *ngIf="successMessage" class="success-message">{{ successMessage }}</div>
+    <div *ngIf="errorMessage" class="error-message">{{ errorMessage }}</div>
+
+    <button type="submit" [disabled]="!registerForm.valid || isLoading" class="submit-btn">
       <span *ngIf="!isLoading">Register</span>
       <span *ngIf="isLoading">Creating Account...</span>
     </button>
-    
-    <p class="login-link">
-      Already have an account? <a routerLink="/login">Login here</a>
-    </p>
+
+    <p class="login-link">Already have an account? <a routerLink="/login">Login here</a></p>
   </form>
 </div>
