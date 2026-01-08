@@ -71,6 +71,16 @@ public class UserService {
         return userMapper.mapUserToUserResponse(user);
     }
 
+
+    public UserResponse getMyProfile(String token) {
+
+        UUID userId = jwtService.getIdFromToken(token);
+
+        User user = findUserById(userId);
+
+        return userMapper.mapUserToUserResponse(user);
+    }
+
     private User findUserById(UUID id) {
         return userRepository.findById(id)
                 .orElseThrow(() -> new UserNotFoundException("User not found with id: " + id));

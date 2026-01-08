@@ -45,7 +45,12 @@ public class UserController {
     }
 
     @GetMapping("/me")
-    public ResponseEntity<UserResponse> getMe() {
-        return ResponseEntity.ok().build();
+    public ResponseEntity<UserResponse> getMe(@RequestHeader("Authorization") String authHeader) {
+
+        String token = authHeader.replace("Bearer ", "");
+
+        UserResponse response = userService.getMyProfile(token);
+
+        return ResponseEntity.ok(response);
     }
 }
