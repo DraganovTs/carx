@@ -2,11 +2,10 @@ package org.homecodecarx.user.service.mapper;
 
 import org.homecodecarx.user.service.model.dto.AuthResponse;
 import org.homecodecarx.user.service.model.dto.RegisterRequest;
+import org.homecodecarx.user.service.model.dto.UserResponse;
 import org.homecodecarx.user.service.model.entity.User;
 import org.homecodecarx.user.service.model.enums.Role;
 import org.springframework.stereotype.Component;
-
-import java.util.UUID;
 
 @Component
 public class UserMapper {
@@ -21,12 +20,22 @@ public class UserMapper {
                 .build();
     }
 
-    public AuthResponse mapUserToAuthResponse(User user , String message , String token ) {
+    public AuthResponse mapUserToAuthResponse(User user, String message, String token) {
         return AuthResponse.builder()
                 .userId(user.getId().toString())
                 .email(user.getEmail())
                 .message(message)
                 .token(token)
+                .build();
+    }
+
+    public UserResponse mapUserToUserResponse(User user) {
+        return UserResponse.builder()
+                .email(user.getEmail())
+                .firstName(user.getFirstName())
+                .lastName(user.getLastName())
+                .phone(user.getPhone())
+                .role(user.getRole().toString())
                 .build();
     }
 }

@@ -4,6 +4,7 @@ import jakarta.validation.Valid;
 import org.homecodecarx.user.service.model.dto.AuthResponse;
 import org.homecodecarx.user.service.model.dto.LoginRequest;
 import org.homecodecarx.user.service.model.dto.RegisterRequest;
+import org.homecodecarx.user.service.model.dto.UserResponse;
 import org.homecodecarx.user.service.service.UserService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -36,12 +37,15 @@ public class UserController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<?> getUserById(@RequestParam UUID id) {
-        return ResponseEntity.ok().build();
+    public ResponseEntity<UserResponse> getUserById(@RequestParam UUID id) {
+
+        UserResponse response = userService.getUserById(id);
+
+        return ResponseEntity.ok(response);
     }
 
     @GetMapping("/me")
-    public ResponseEntity<?> getMe() {
+    public ResponseEntity<UserResponse> getMe() {
         return ResponseEntity.ok().build();
     }
 }

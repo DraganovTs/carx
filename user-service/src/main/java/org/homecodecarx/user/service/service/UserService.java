@@ -10,11 +10,13 @@ import org.homecodecarx.user.service.mapper.UserMapper;
 import org.homecodecarx.user.service.model.dto.AuthResponse;
 import org.homecodecarx.user.service.model.dto.LoginRequest;
 import org.homecodecarx.user.service.model.dto.RegisterRequest;
+import org.homecodecarx.user.service.model.dto.UserResponse;
 import org.homecodecarx.user.service.model.entity.User;
 import org.homecodecarx.user.service.repository.UserRepository;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.util.UUID;
 
 
 @Service
@@ -62,6 +64,18 @@ public class UserService {
         return generateAuthResponse(user, Constants.LOGIN_SUCCESSFUL.name());
     }
 
+    public UserResponse getUserById(UUID id) {
+
+        User user = findUserById(id);
+
+        return userMapper.mapUserToUserResponse(user);
+    }
+
+    private User findUserById(UUID id) {
+        return userRepository.findById(id)
+                .orElseThrow(() -> new UserNotFoundException("User not found with id: " + id));
+    }
+
     private User findUserByEmail(String email) {
         return userRepository.findByEmail(email)
                 .orElseThrow(() -> new UserNotFoundException("User not found with email: " + email));
@@ -71,4 +85,6 @@ public class UserService {
         String token = jwtService.generateToken(user.getEmail(), user.getId().toString());
         return userMapper.mapUserToAuthResponse(user, message, token);
     }
+
+
 }
