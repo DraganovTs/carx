@@ -12,6 +12,7 @@ export interface CarView {
   mileage: number;
   location: string;
   mainImageUrl: string;
+  status?: 'AVAILABLE' | 'SOLD' | 'PENDING';
 }
 
 export interface CarPage {

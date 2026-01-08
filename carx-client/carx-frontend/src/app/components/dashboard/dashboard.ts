@@ -1,16 +1,17 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { CarView, CarService } from '../../services/car.service';
+import { UserService } from '../../services/user';
 
 @Component({
   selector: 'app-dashboard',
   imports: [CommonModule, FormsModule],
   templateUrl: './dashboard.html',
-  styleUrl: './dashboard.css',
+  styleUrls: ['./dashboard.css'],
 })
-export class Dashboard {
+export class Dashboard implements OnInit {
   cars: CarView[] = [];
   page = 1;
   pageSize = 6;
@@ -20,13 +21,18 @@ export class Dashboard {
   selectedBrand = '';
   selectedLocation = '';
 
+  isLoggedIn = false;
   brands = ['BMW', 'Mercedes', 'Toyota', 'Honda', 'Ford'];
   locations = ['Tbilisi', 'Batumi', 'Kutaisi'];
 
   constructor(
     private carService: CarService,
+    private userService: UserService,
     private router: Router
-  ) {
+  ) {}
+
+  ngOnInit(): void {
+    this.isLoggedIn = this.userService.isLoggedIn();
     this.loadCars();
   }
 
@@ -66,6 +72,14 @@ export class Dashboard {
   }
 
   goToPost() {
-    this.router.navigate(['/login']);
+    if (this.isLoggedIn) {
+      this.router.navigate(['/post-car']);
+    } else {
+      this.router.navigate(['/login']);
+    }
+  }
+
+  goToProfile() {
+    this.router.navigate(['/profile']);
   }
 }

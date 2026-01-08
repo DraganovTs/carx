@@ -20,15 +20,6 @@ export interface RegisterRequest {
   role?: 'SELLER' | 'BUYER' | 'ADMIN';
 }
 
-export interface RegisterRequest {
-  email: string;
-  password: string;
-  firstName: string;
-  lastName: string;
-  phone?: string;
-  role?: 'SELLER' | 'BUYER' | 'ADMIN';
-}
-
 export interface LoginRequest {
   email: string;
   password: string;

@@ -49,6 +49,7 @@ public class UserController {
 
         String token = authHeader.replace("Bearer ", "");
 
+
         UserResponse response = userService.getMyProfile(token);
 
         return ResponseEntity.ok(response);
