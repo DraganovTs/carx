@@ -1,1 +1,45 @@
-<p>dashboard works!</p>
+<div class="dashboard-container">
+
+  <div class="top-bar">
+    <h1>🚘 CarX Marketplace</h1>
+    <button class="post-btn" (click)="goToPost()">Post Your Car</button>
+  </div>
+
+  <div class="search-filter">
+    <input type="text" placeholder="Search cars..." [(ngModel)]="searchText" (input)="applyFilter()" />
+    
+    <select [(ngModel)]="selectedBrand" (change)="applyFilter()">
+      <option value="">All Brands</option>
+      <option *ngFor="let b of brands" [value]="b">{{b}}</option>
+    </select>
+
+    <select [(ngModel)]="selectedLocation" (change)="applyFilter()">
+      <option value="">All Locations</option>
+      <option *ngFor="let loc of locations" [value]="loc">{{loc}}</option>
+    </select>
+  </div>
+
+  <div class="car-grid">
+    <div class="car-card" *ngFor="let car of cars">
+      <img [src]="car.mainImageUrl || 'assets/default-car.jpg'" alt="Car image" />
+      <div class="card-content">
+        <h3>{{car.title}}</h3>
+        <div class="price">${{car.price}}</div>
+        <div class="details">
+          <div><b>Brand:</b> {{car.brand}} {{car.model}}</div>
+          <div><b>Year:</b> {{car.year}}</div>
+          <div><b>Mileage:</b> {{car.mileage}} km</div>
+          <div><b>Mileage:</b> {{car.mileage}} miles</div>
+          <div><b>Location:</b> {{car.location}}, {{car.location}}</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="pagination">
+    <button (click)="prevPage()" [disabled]="page === 1">Previous</button>
+    <button *ngFor="let p of totalPagesArray()" (click)="setPage(p)">{{p}}</button>
+    <button (click)="nextPage()" [disabled]="page === totalPages">Next</button>
+  </div>
+
+</div>
