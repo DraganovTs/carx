@@ -1,37 +1,32 @@
-package org.homecodecarx.car.listing.service.model.entity;
+package org.homecodecarx.car.listing.service.model.dto;
 
-import jakarta.persistence.*;
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 import org.homecodecarx.car.listing.service.model.enums.ListingStatus;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
-@Entity
-@Table(name = "car_listings")
-@Getter
-@Setter
+@Data
+@Builder
 @AllArgsConstructor
 @NoArgsConstructor
-@Builder
-public class CarListing {
-    @Id
-    @GeneratedValue(strategy = GenerationType.UUID)
+public class CarListingResponse {
     private UUID id;
-    private UUID sellerId;
     private String title;
     private String description;
     private BigDecimal price;
     private Integer year;
     private Integer mileage;
+    private String brand;
+    private String model;
     private String fuelType;
     private String gearbox;
     private String category;
-    private String brand;
-    private String model;
     private String location;
-    @Enumerated(EnumType.STRING)
-    private ListingStatus status;
+    private String status;
     private LocalDateTime createdAt;
 }
