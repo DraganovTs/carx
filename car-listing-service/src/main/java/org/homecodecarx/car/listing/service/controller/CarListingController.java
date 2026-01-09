@@ -21,21 +21,23 @@ public class CarListingController {
         this.carListingService = carListingService;
     }
 
-    @PostMapping()
-    public ResponseEntity<?> createListing(@RequestBody CreateCarListingRequest request){
+    @PostMapping
+    public ResponseEntity<CarListingResponse> create(@RequestBody CreateCarListingRequest request){
 
         CarListingResponse response = carListingService.listCar(request);
 
-        return ResponseEntity.ok().build();
+        return ResponseEntity.ok(response);
     }
 
     @PostMapping("/{id}/images")
-    public ResponseEntity<CarImageResponse> addImage(
+    public ResponseEntity<CarImageResponse> uploadImage(
             @PathVariable("id") UUID listingId,
             @RequestBody String imageUrl,
             @RequestParam(defaultValue = "0") int position
     ) {
         return ResponseEntity.ok(carListingService.addImage(listingId, imageUrl, position));
     }
+
+
 
 }
