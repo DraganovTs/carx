@@ -1,56 +1,290 @@
-<div class="dashboard-container">
-
-  <div class="top-bar">
-    <h1>CarX Marketplace</h1>
-
-   <div class="actions">
-  <button class="profile-btn" *ngIf="isLoggedIn" (click)="goToProfile()">My Profile</button>
-  <button class="post-btn" (click)="goToPost()">Sell Your Car</button>
-</div>
-
-  </div>
-
-  <div class="search-filter">
-    <input type="text" placeholder="Search by title, model..." [(ngModel)]="searchText" (input)="applyFilter()" />
-
-    <select [(ngModel)]="selectedBrand" (change)="applyFilter()">
-      <option value="">All Brands</option>
-      <option *ngFor="let b of brands" [value]="b">{{ b }}</option>
-    </select>
-
-    <select [(ngModel)]="selectedLocation" (change)="applyFilter()">
-      <option value="">All Cities</option>
-      <option *ngFor="let loc of locations" [value]="loc">{{ loc }}</option>
-    </select>
-  </div>
-
-  <div class="car-grid">
-    <div class="car-card" *ngFor="let car of cars">
-
-      <div class="image-wrapper">
-        <img [src]="car.mainImageUrl || 'assets/default-car.jpg'" alt="Car image" />
-        <span class="badge" [ngClass]="car.status">{{ car.status || 'AVAILABLE' }}</span>
+<!-- dashboard.html - Updated version -->
+<div class="dashboard-page">
+  <!-- Modern Header with Navigation -->
+  <header class="dashboard-header">
+    <div class="header-content">
+      <div class="logo-section">
+        <div class="logo">
+          <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M19 17h2c.6 0 1-.4 1-1v-3c0-.9-.7-1.7-1.5-1.9C18.7 10.6 16 10 16 10s-1.3-2-3-2h-2c-1.7 0-3 1.3-3 3"/>
+            <path d="M5 17H3c-.6 0-1-.4-1-1v-3c0-.9.7-1.7 1.5-1.9C5.3 10.6 8 10 8 10s1.3-2 3-2h2c1.7 0 3 1.3 3 3v6"/>
+            <circle cx="7" cy="17" r="2"/>
+            <circle cx="17" cy="17" r="2"/>
+          </svg>
+          <h1>Car<span>X</span></h1>
+        </div>
+        <p class="tagline">Find Your Perfect Ride</p>
       </div>
 
-      <div class="card-content">
-        <h3>{{ car.title }}</h3>
-        <div class="price">${{ car.price }}</div>
-
-        <div class="car-specs">
-          <span>{{ car.year }}</span> •
-          <span>{{ car.mileage }} km</span> •
-          <span>{{ car.location }}</span>
+      <div class="user-section">
+        <div class="user-info" *ngIf="isLoggedIn">
+          <div class="user-avatar" (click)="goToProfile()">
+            {{ getUserInitials() }}
+          </div>
+          <div class="user-details">
+            <span class="welcome">Welcome back</span>
+            <span class="user-email">{{ userEmail }}</span>
+          </div>
+          <button class="logout-btn" (click)="logout()" title="Logout">
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+              <polyline points="16 17 21 12 16 7"></polyline>
+              <line x1="21" y1="12" x2="9" y2="12"></line>
+            </svg>
+          </button>
         </div>
-
-        <button class="view-btn">View Details</button>
+        <div class="auth-buttons" *ngIf="!isLoggedIn">
+          <button class="btn-login" (click)="router.navigate(['/login'])">Sign In</button>
+          <button class="btn-register" (click)="router.navigate(['/register'])">Register</button>
+        </div>
       </div>
     </div>
-  </div>
 
-  <div class="pagination">
-    <button (click)="prevPage()" [disabled]="page === 1">Prev</button>
-    <button *ngFor="let p of totalPagesArray()" (click)="setPage(p)" [class.active]="p === page">{{ p }}</button>
-    <button (click)="nextPage()" [disabled]="page === totalPages">Next</button>
-  </div>
+    <!-- Main Navigation -->
+    <nav class="main-nav">
+      <div class="nav-content">
+        <button class="nav-btn active">
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+            <polyline points="9 22 9 12 15 12 15 22"></polyline>
+          </svg>
+          Browse Cars
+        </button>
+        <button class="nav-btn" (click)="goToPost()">
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M12 5v14M5 12h14"/>
+          </svg>
+          Sell Your Car
+        </button>
+        <button class="nav-btn" *ngIf="isLoggedIn" (click)="goToProfile()">
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="8" r="4"/>
+            <path d="M6 21v-2a4 4 0 0 1 4-4h4a4 4 0 0 1 4 4v2"/>
+          </svg>
+          My Profile
+        </button>
+      </div>
+    </nav>
+  </header>
 
+  <!-- Hero Section -->
+  <section class="hero-section">
+    <div class="hero-content">
+      <div class="hero-text">
+        <h2>Drive Your Dream</h2>
+        <p>Discover the perfect vehicle from thousands of listings. Luxury, economy, or classic – we have it all.</p>
+        <div class="hero-stats">
+          <div class="stat">
+            <span class="stat-number">1,200+</span>
+            <span class="stat-label">Cars Listed</span>
+          </div>
+          <div class="stat">
+            <span class="stat-number">98%</span>
+            <span class="stat-label">Satisfaction</span>
+          </div>
+          <div class="stat">
+            <span class="stat-number">24h</span>
+            <span class="stat-label">Support</span>
+          </div>
+        </div>
+      </div>
+      <div class="hero-image">
+        <div class="image-placeholder">
+          <!-- You can replace this with an actual image -->
+          <svg xmlns="http://www.w3.org/2000/svg" width="120" height="120" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+            <path d="M19 17h2c.6 0 1-.4 1-1v-3c0-.9-.7-1.7-1.5-1.9C18.7 10.6 16 10 16 10s-1.3-2-3-2h-2c-1.7 0-3 1.3-3 3"/>
+            <path d="M5 17H3c-.6 0-1-.4-1-1v-3c0-.9.7-1.7 1.5-1.9C5.3 10.6 8 10 8 10s1.3-2 3-2h2c1.7 0 3 1.3 3 3v6"/>
+            <circle cx="7" cy="17" r="2"/>
+            <circle cx="17" cy="17" r="2"/>
+            <line x1="12" y1="8" x2="12" y2="14"/>
+            <line x1="9" y1="11" x2="15" y2="11"/>
+          </svg>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Search & Filters -->
+  <section class="search-section">
+    <div class="search-container">
+      <div class="search-box">
+        <div class="search-icon">
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="11" cy="11" r="8"/>
+            <path d="m21 21-4.35-4.35"/>
+          </svg>
+        </div>
+        <input 
+          type="text" 
+          placeholder="Search cars by model, year, or features..." 
+          [(ngModel)]="searchText"
+          (input)="applyFilter()"
+          class="search-input"
+        >
+      </div>
+
+      <div class="filter-row">
+        <div class="filter-group">
+          <label>Brand</label>
+          <select [(ngModel)]="selectedBrand" (change)="applyFilter()" class="filter-select">
+            <option value="">All Brands</option>
+            <option *ngFor="let b of brands" [value]="b">{{ b }}</option>
+          </select>
+        </div>
+
+        <div class="filter-group">
+          <label>Location</label>
+          <select [(ngModel)]="selectedLocation" (change)="applyFilter()" class="filter-select">
+            <option value="">All Cities</option>
+            <option *ngFor="let c of locations" [value]="c">{{ c }}</option>
+          </select>
+        </div>
+
+        <div class="filter-group">
+          <label>Sort By</label>
+          <select class="filter-select" (change)="applyFilter()">
+            <option>Newest First</option>
+            <option>Price: Low to High</option>
+            <option>Price: High to Low</option>
+          </select>
+        </div>
+
+        <button class="filter-btn" (click)="applyFilter()">
+          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/>
+          </svg>
+          Apply Filters
+        </button>
+      </div>
+    </div>
+  </section>
+
+  <!-- Cars Grid -->
+  <main class="main-content">
+    <div class="content-header">
+      <h3>Featured Listings</h3>
+      <div class="results-info">
+        <span>{{ cars.length }} cars available</span>
+        <div class="view-toggle">
+          <button class="view-option active">Grid</button>
+          <button class="view-option">List</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="cars-grid">
+      <div class="car-card" *ngFor="let car of cars">
+        <!-- Use the isCarNew method instead of car.isNew -->
+        <div class="card-badge" *ngIf="isCarNew(car)">NEW</div>
+        <div class="card-image">
+          <img [src]="car.mainImageUrl || 'assets/default-car.jpg'" [alt]="car.title" />
+          <button class="favorite-btn">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
+            </svg>
+          </button>
+        </div>
+        
+        <div class="card-content">
+          <div class="card-header">
+            <h4>{{ car.title }}</h4>
+            <div class="price">${{ formatPrice(car.price) }}</div>
+          </div>
+          
+          <div class="car-specs">
+            <div class="spec">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
+                <line x1="16" y1="2" x2="16" y2="6"/>
+                <line x1="8" y1="2" x2="8" y2="6"/>
+                <line x1="3" y1="10" x2="21" y2="10"/>
+              </svg>
+              {{ car.year }}
+            </div>
+            <div class="spec">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/>
+              </svg>
+              {{ car.mileage }} km
+            </div>
+            <div class="spec">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/>
+                <circle cx="12" cy="10" r="3"/>
+              </svg>
+              {{ car.location }}
+            </div>
+          </div>
+          
+          <div class="card-footer">
+            <!-- Pass car.id (which is string) to viewCarDetails -->
+            <button class="btn-view" (click)="viewCarDetails(car.id)">
+              View Details
+            </button>
+            <button class="btn-contact">
+              Contact Seller
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Pagination -->
+    <div class="pagination-wrapper">
+      <div class="pagination">
+        <button class="pagination-btn" (click)="prevPage()" [disabled]="page === 1">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polyline points="15 18 9 12 15 6"/>
+          </svg>
+          Previous
+        </button>
+        
+        <div class="page-numbers">
+          <button 
+            *ngFor="let p of totalPagesArray()" 
+            (click)="setPage(p)" 
+            [class.active]="p === page"
+            class="page-number"
+          >
+            {{ p }}
+          </button>
+        </div>
+        
+        <button class="pagination-btn" (click)="nextPage()" [disabled]="page === totalPages">
+          Next
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polyline points="9 18 15 12 9 6"/>
+          </svg>
+        </button>
+      </div>
+    </div>
+  </main>
+
+  <!-- Footer -->
+  <footer class="dashboard-footer">
+    <div class="footer-content">
+      <div class="footer-section">
+        <div class="logo">
+          <h3>Car<span>X</span></h3>
+          <p>Your trusted car marketplace</p>
+        </div>
+        <p class="copyright">© 2024 CarX Marketplace. All rights reserved.</p>
+      </div>
+      
+      <div class="footer-section">
+        <h4>Quick Links</h4>
+        <a (click)="goToPost()">Sell Your Car</a>
+        <a (click)="router.navigate(['/dashboard'])">Browse Cars</a>
+        <a>How It Works</a>
+        <a>Contact Us</a>
+      </div>
+      
+      <div class="footer-section">
+        <h4>Contact</h4>
+        <p>support@carx.bg</p>
+        <p>+885 888 888</p>
+        <p>Sofia, Bulgaria</p>
+      </div>
+    </div>
+  </footer>
 </div>

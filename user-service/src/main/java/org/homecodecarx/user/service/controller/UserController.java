@@ -51,7 +51,7 @@ public class UserController {
 
 
         UserResponse response = userService.getMyProfile(token);
-
+        System.out.println(response.toString());
         return ResponseEntity.ok(response);
     }
 }

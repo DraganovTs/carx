@@ -22,17 +22,20 @@ export class Dashboard implements OnInit {
   selectedLocation = '';
 
   isLoggedIn = false;
+  userEmail = '';
+
   brands = ['BMW', 'Mercedes', 'Toyota', 'Honda', 'Ford'];
-  locations = ['Tbilisi', 'Batumi', 'Kutaisi'];
+  locations = ['Sofia', 'Varna', 'Plovdiv'];
 
   constructor(
     private carService: CarService,
     private userService: UserService,
-    private router: Router
+    public router: Router
   ) {}
 
   ngOnInit(): void {
     this.isLoggedIn = this.userService.isLoggedIn();
+    this.userEmail = localStorage.getItem('userEmail') || '';
     this.loadCars();
   }
 
@@ -81,5 +84,33 @@ export class Dashboard implements OnInit {
 
   goToProfile() {
     this.router.navigate(['/profile']);
+  }
+
+  logout() {
+    this.userService.logout();
+    this.isLoggedIn = false;
+    this.userEmail = '';
+    this.router.navigate(['/dashboard']);
+  }
+
+  getUserInitials(): string {
+    if (!this.userEmail) return 'U';
+    const email = this.userEmail.split('@')[0];
+    return email.charAt(0).toUpperCase();
+  }
+
+  formatPrice(price: number): string {
+    return price.toLocaleString();
+  }
+
+  viewCarDetails(carId: string) {
+    console.log('View car:', carId);
+   
+  }
+
+  isCarNew(car: CarView): boolean {
+    
+    const currentYear = new Date().getFullYear();
+    return car.year === currentYear;
   }
 }
