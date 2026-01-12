@@ -8,6 +8,7 @@ import org.homecodecarx.car.listing.service.model.dto.CarListingResponse;
 import org.homecodecarx.car.listing.service.model.dto.CreateCarListingRequest;
 import org.homecodecarx.car.listing.service.model.entity.CarImage;
 import org.homecodecarx.car.listing.service.model.entity.CarListing;
+import org.homecodecarx.car.listing.service.repository.CarImageRepository;
 import org.homecodecarx.car.listing.service.repository.CarListingRepository;
 import org.springframework.stereotype.Service;
 

@@ -1,4 +1,4 @@
-package org.homecodecarx.car.listing.service.service;
+package org.homecodecarx.car.listing.service.repository;
 
 import org.homecodecarx.car.listing.service.model.entity.CarImage;
 import org.springframework.data.jpa.repository.JpaRepository;
