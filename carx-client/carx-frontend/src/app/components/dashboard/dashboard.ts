@@ -2,7 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { CarView, CarService } from '../../services/car.service';
+import { CarView, CarService } from '../../services/car';
 import { UserService } from '../../services/user';
 
 @Component({
@@ -100,8 +100,11 @@ export class Dashboard implements OnInit {
   }
 
   formatPrice(price: number): string {
-    return price.toLocaleString();
-  }
+  return new Intl.NumberFormat('de-DE', {
+    style: 'currency',
+    currency: 'EUR'
+  }).format(price);
+}
 
   viewCarDetails(carId: string) {
     console.log('View car:', carId);
