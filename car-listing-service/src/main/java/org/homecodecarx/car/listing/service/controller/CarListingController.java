@@ -24,6 +24,8 @@ public class CarListingController {
     @PostMapping
     public ResponseEntity<CarListingResponse> create(@RequestBody CreateCarListingRequest request){
 
+        System.out.println(request.toString());
+
         CarListingResponse response = carListingService.listCar(request);
 
         return ResponseEntity.ok(response);
@@ -35,6 +37,11 @@ public class CarListingController {
             @RequestBody String imageUrl,
             @RequestParam(defaultValue = "0") int position
     ) {
+
+        System.out.println(listingId);
+        System.out.println(imageUrl);
+
+
         return ResponseEntity.ok(carListingService.addImage(listingId, imageUrl, position));
     }
 

@@ -7,12 +7,13 @@ import org.homecodecarx.car.listing.service.model.enums.ListingStatus;
 import org.springframework.stereotype.Component;
 
 import java.time.LocalDateTime;
+import java.util.UUID;
 
 @Component
 public class CarListingMapper {
     public CarListing mapCarListigRequestToCarListing(CreateCarListingRequest request) {
         return CarListing.builder()
-                .sellerId(request.getSellerId())
+                .sellerId(UUID.fromString(request.getSellerId()))
                 .title(request.getTitle())
                 .description(request.getDescription())
                 .price(request.getPrice())
