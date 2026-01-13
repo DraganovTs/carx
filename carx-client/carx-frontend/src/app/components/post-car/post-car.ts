@@ -26,6 +26,8 @@ export class PostCar implements OnInit {
   // User info
   isLoggedIn = false;
   userEmail = '';
+  userEmailUsername = '';
+  userUuid: string | null = null;
 
   // Form constraints
   minYear = 1900;
@@ -60,6 +62,11 @@ export class PostCar implements OnInit {
   ngOnInit(): void {
     this.isLoggedIn = this.userService.isLoggedIn();
     this.userEmail = localStorage.getItem('userEmail') || '';
+    this.userUuid = localStorage.getItem('userId');
+
+    if (this.userEmail) {
+      this.userEmailUsername = this.userEmail.split('@')[0];
+    }
     
     // Auto-populate sellerId if user is logged in
     if (this.isLoggedIn && this.userEmail) {
@@ -67,6 +74,13 @@ export class PostCar implements OnInit {
         sellerId: this.userEmail.split('@')[0] // Use part of email as seller ID
       });
     }
+
+    console.log('User info:', {
+      isLoggedIn: this.isLoggedIn,
+      email: this.userEmail,
+      emailUsername: this.userEmailUsername,
+      uuid: this.userUuid
+    });
   }
 
   onSubmit(): void {
@@ -80,7 +94,10 @@ export class PostCar implements OnInit {
     this.errorMessage = '';
     this.successMessage = '';
 
-    const request: CreateCarListingRequest = this.carForm.value;
+    const formValues = this.carForm.value;
+
+    const request: CreateCarListingRequest = { ...formValues,
+      sellerId: this.userUuid || '' };
 
     this.carListingService.createCarListing(request).subscribe({
       next: (response) => {

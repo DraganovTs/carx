@@ -776,3 +776,15 @@
   color: #667eea;
 }
 
+input[readonly] {
+  background-color: #f8f9fa;
+  border-color: #e9ecef;
+  cursor: not-allowed;
+  color: #6c757d;
+}
+
+.form-hint {
+  font-size: 0.875rem;
+  color: #6c757d;
+  margin-top: 0.25rem;
+}
