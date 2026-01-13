@@ -19,7 +19,7 @@ export class PostCar implements OnInit {
   errorMessage = '';
   successMessage = '';
   createdListingId: string | null = null;
-  imageUrl = '';
+  selectedFile: File | null = null;
   imagePosition = 0;
   uploadedImages: CarImageResponse[] = [];
 
@@ -110,7 +110,7 @@ export class PostCar implements OnInit {
         
         // Reset uploaded images for new listing
         this.uploadedImages = [];
-        this.imageUrl = '';
+       
 
         this.crd.detectChanges();
       },
@@ -123,33 +123,57 @@ export class PostCar implements OnInit {
     });
   }
 
-  uploadImage(): void {
-    if (!this.createdListingId || !this.imageUrl) {
-      this.errorMessage = 'Please enter an image URL.';
-      return;
-    }
-
-    this.isUploading = true;
-    this.errorMessage = '';
-
-    this.carListingService.uploadImage(
-      this.createdListingId, 
-      this.imageUrl, 
-      this.imagePosition
-    ).subscribe({
-      next: (response) => {
-        this.uploadedImages.push(response);
-        this.imageUrl = '';
-        this.isUploading = false;
-        this.successMessage = 'Image uploaded successfully!';
-      },
-      error: (error) => {
-        console.error('Error uploading image:', error);
-        this.errorMessage = error.error?.message || 'Failed to upload image.';
-        this.isUploading = false;
-      }
-    });
+  onFileSelected(event: Event): void {
+  const input = event.target as HTMLInputElement;
+  if (!input.files || input.files.length === 0) {
+    return;
   }
+
+  const file = input.files[0];
+
+  // Basic validation
+  if (!file.type.startsWith('image/')) {
+    this.errorMessage = 'Only image files are allowed.';
+    return;
+  }
+
+  if (file.size > 5 * 1024 * 1024) {
+    this.errorMessage = 'Image must be smaller than 5MB.';
+    return;
+  }
+
+  this.selectedFile = file;
+  this.errorMessage = '';
+}
+
+  uploadImage(): void {
+  if (!this.createdListingId || !this.selectedFile) {
+    this.errorMessage = 'Please select an image file.';
+    return;
+  }
+
+  this.isUploading = true;
+  this.errorMessage = '';
+  this.crd.detectChanges();
+
+  this.carListingService.uploadImage(
+    this.createdListingId,
+    this.selectedFile,
+    this.imagePosition
+  ).subscribe({
+    next: (response) => {
+      this.uploadedImages.push(response);
+      this.selectedFile = null;
+      this.isUploading = false;
+      this.successMessage = 'Image uploaded successfully!';
+    },
+    error: (error) => {
+      console.error('Upload error:', error);
+      this.errorMessage = 'Failed to upload image.';
+      this.isUploading = false;
+    }
+  });
+}
 
   removeImage(imageId: string): void {
     this.uploadedImages = this.uploadedImages.filter(img => img.id !== imageId);
@@ -184,5 +208,40 @@ export class PostCar implements OnInit {
     if (!this.userEmail) return 'U';
     const email = this.userEmail.split('@')[0];
     return email.charAt(0).toUpperCase();
+  }
+
+  getFileSize(bytes: number): string {
+    if (bytes === 0) return '0 Bytes';
+    const k = 1024;
+    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+  }
+
+  isImageFile(file: File): boolean {
+    return file.type.startsWith('image/');
+  }
+
+  getImagePreview(file: File): string {
+    return URL.createObjectURL(file);
+  }
+
+  clearSelectedFile(): void {
+    this.selectedFile = null;
+    this.crd.detectChanges();
+  }
+
+    handleImageError(event: Event): void {
+    const img = event.target as HTMLImageElement;
+    img.src = 'assets/default-car.jpg'; // Fallback image
+  }
+
+   getDisplayImageUrl(imageUrl: string): string {
+    // If it's a data URL or absolute URL, use it directly
+    if (imageUrl.startsWith('data:') || imageUrl.startsWith('http')) {
+      return imageUrl;
+    }
+    // Otherwise, assume it's a relative path
+    return imageUrl;
   }
 }

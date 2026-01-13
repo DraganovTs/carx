@@ -53,13 +53,14 @@ export class CarListingService {
     return this.http.post<CarListingResponse>(this.apiUrl, request);
   }
 
-  uploadImage(listingId: string, imageUrl: string, position: number = 0): Observable<CarImageResponse> {
-    return this.http.post<CarImageResponse>(
-      `${this.apiUrl}/${listingId}/images`,
-      imageUrl, 
-      {
-        params: { position: position.toString() }
-      }
-    );
-  }
+  uploadImage(listingId: string, file: File, position: number) {
+  const formData = new FormData();
+  formData.append('image', file);
+  formData.append('position', position.toString());
+
+  return this.http.post<CarImageResponse>(
+    `/api/listings/${listingId}/images`,
+    formData
+  );
+}
 }
