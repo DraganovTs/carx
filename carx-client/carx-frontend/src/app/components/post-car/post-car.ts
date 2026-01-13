@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
@@ -37,7 +37,8 @@ export class PostCar implements OnInit {
     private fb: FormBuilder,
     private carListingService: CarListingService,
     private userService: UserService,
-    public router: Router
+    public router: Router,
+    private crd: ChangeDetectorRef
   ) {
     this.carForm = this.fb.group({
       sellerId: ['', Validators.required],
@@ -87,12 +88,14 @@ export class PostCar implements OnInit {
     if (this.carForm.invalid) {
       this.markFormGroupTouched(this.carForm);
       this.errorMessage = 'Please fill all required fields correctly.';
+      this.crd.detectChanges();
       return;
     }
 
     this.isLoading = true;
     this.errorMessage = '';
     this.successMessage = '';
+    this.crd.detectChanges();
 
     const formValues = this.carForm.value;
 
@@ -108,11 +111,14 @@ export class PostCar implements OnInit {
         // Reset uploaded images for new listing
         this.uploadedImages = [];
         this.imageUrl = '';
+
+        this.crd.detectChanges();
       },
       error: (error) => {
         console.error('Error creating listing:', error);
         this.errorMessage = error.error?.message || 'Failed to create car listing. Please try again.';
         this.isLoading = false;
+        this.crd.detectChanges();
       }
     });
   }
