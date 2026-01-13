@@ -11,7 +11,13 @@ import org.homecodecarx.car.listing.service.model.entity.CarListing;
 import org.homecodecarx.car.listing.service.repository.CarImageRepository;
 import org.homecodecarx.car.listing.service.repository.CarListingRepository;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 import java.util.UUID;
 
 @Service
@@ -41,13 +47,23 @@ public class CarListingService {
         return carListingMapper.mapCarListToCarListingresponse(carListing);
     }
 
-    public CarImageResponse addImage(UUID listingId, String imageUrl, int position) {
+    public CarImageResponse addImage(String listingId, MultipartFile file, int position) throws IOException {
 
-        CarListing carListing = carListingRepository.findById(listingId)
+        CarListing carListing = carListingRepository.findById(UUID.fromString(listingId))
                 .orElseThrow(() -> new CarNotFoundException("Car not found whit id: " + listingId));
 
+        Path uploadDir = Paths.get("uploads/cars/" + carListing.getId().toString());
+        Files.createDirectories(uploadDir);
+
+        String fileName = UUID.randomUUID() + "_" + file.getOriginalFilename();
+        Path filePath = uploadDir.resolve(fileName);
+
+        Files.copy(file.getInputStream(), filePath, StandardCopyOption.REPLACE_EXISTING);
+
+        String imageUrl = "/uploads/cars/" + listingId + "/" + fileName;
+
         CarImage image = CarImage.builder()
-                .listingId(listingId)
+                .listingId(UUID.fromString(listingId))
                 .imageUrl(imageUrl)
                 .position(position)
                 .build();
@@ -58,7 +74,7 @@ public class CarListingService {
                 .id(image.getId())
                 .imageUrl(imageUrl)
                 .position(position)
-                .listingId(listingId)
+                .listingId(UUID.fromString(listingId))
                 .build();
     }
 }

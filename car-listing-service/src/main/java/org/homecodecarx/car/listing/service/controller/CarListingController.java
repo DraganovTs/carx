@@ -7,6 +7,7 @@ import org.homecodecarx.car.listing.service.service.CarListingService;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.UUID;
 
@@ -31,18 +32,16 @@ public class CarListingController {
         return ResponseEntity.ok(response);
     }
 
-    @PostMapping("/{id}/images")
+    @PostMapping(value = "/{id}/images" , consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<CarImageResponse> uploadImage(
-            @PathVariable("id") UUID listingId,
-            @RequestBody String imageUrl,
+            @PathVariable("id") String id,
+            @RequestParam("file") MultipartFile file,
             @RequestParam(defaultValue = "0") int position
     ) {
 
-        System.out.println(listingId);
-        System.out.println(imageUrl);
 
 
-        return ResponseEntity.ok(carListingService.addImage(listingId, imageUrl, position));
+        return ResponseEntity.ok(carListingService.addImage(id, file, position));
     }
 
 
