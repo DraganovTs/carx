@@ -1,9 +1,11 @@
-import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
+import { ChangeDetectorRef, Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
 import { CreateCarListingRequest, CarImageResponse, CarListingService } from '../../services/car-listing';
 import { UserService } from '../../services/user';
+import { finalize, catchError, switchMap } from 'rxjs/operators';
+import { of } from 'rxjs';
 
 @Component({
   selector: 'app-post-car',
@@ -12,7 +14,7 @@ import { UserService } from '../../services/user';
   templateUrl: './post-car.html',
   styleUrls: ['./post-car.css']
 })
-export class PostCar implements OnInit {
+export class PostCar implements OnInit, OnDestroy {
   carForm: FormGroup;
   isLoading = false;
   isUploading = false;
@@ -22,6 +24,10 @@ export class PostCar implements OnInit {
   selectedFile: File | null = null;
   imagePosition = 0;
   uploadedImages: CarImageResponse[] = [];
+  
+  // Store blob URLs to revoke later
+  private blobUrls: string[] = [];
+    selectedFilePreviewUrl: string | null = null;
 
   // User info
   isLoggedIn = false;
@@ -38,7 +44,7 @@ export class PostCar implements OnInit {
     private carListingService: CarListingService,
     private userService: UserService,
     public router: Router,
-    private crd: ChangeDetectorRef
+    private cdr: ChangeDetectorRef
   ) {
     this.carForm = this.fb.group({
       sellerId: ['', Validators.required],
@@ -75,105 +81,142 @@ export class PostCar implements OnInit {
         sellerId: this.userEmail.split('@')[0] // Use part of email as seller ID
       });
     }
-
-    console.log('User info:', {
-      isLoggedIn: this.isLoggedIn,
-      email: this.userEmail,
-      emailUsername: this.userEmailUsername,
-      uuid: this.userUuid
-    });
   }
 
   onSubmit(): void {
-    if (this.carForm.invalid) {
-      this.markFormGroupTouched(this.carForm);
-      this.errorMessage = 'Please fill all required fields correctly.';
-      this.crd.detectChanges();
-      return;
-    }
+  if (this.carForm.invalid) {
+    this.markFormGroupTouched(this.carForm);
+    this.errorMessage = 'Please fill all required fields correctly.';
+    return;
+  }
 
-    this.isLoading = true;
-    this.errorMessage = '';
-    this.successMessage = '';
-    this.crd.detectChanges();
+  this.isLoading = true;
+  this.errorMessage = '';
+  this.successMessage = '';
+  this.createdListingId = null; 
 
-    const formValues = this.carForm.value;
+  const request: CreateCarListingRequest = { 
+    ...this.carForm.value,
+    sellerId: this.userUuid || ''
+  };
 
-    const request: CreateCarListingRequest = { ...formValues,
-      sellerId: this.userUuid || '' };
-
-    this.carListingService.createCarListing(request).subscribe({
-      next: (response) => {
-        this.createdListingId = response.id;
-        this.successMessage = `Car listing created successfully! Listing ID: ${response.id}`;
-        this.isLoading = false;
-        
-        // Reset uploaded images for new listing
-        this.uploadedImages = [];
-       
-
-        this.crd.detectChanges();
-      },
-      error: (error) => {
+  setTimeout(() => {
+    this.carListingService.createCarListing(request).pipe(
+      catchError(error => {
         console.error('Error creating listing:', error);
         this.errorMessage = error.error?.message || 'Failed to create car listing. Please try again.';
         this.isLoading = false;
-        this.crd.detectChanges();
+        this.cdr.markForCheck();
+        return of(null);
+      }),
+      finalize(() => {
+        this.isLoading = false;
+      })
+    ).subscribe(response => {
+      if (response && response.id) {
+        this.createdListingId = response.id;
+        this.successMessage = `Car listing created successfully! Listing ID: ${response.id}`;
+        
+        this.uploadedImages = [];
+        
+        this.cleanupBlobUrls();
+        
+        console.log('Listing created with ID:', response.id);
+        
+       
+      } else {
+        this.errorMessage = 'Failed to create listing: No ID returned from server.';
       }
+      this.cdr.markForCheck();
+    });
+  });
+}
+
+  onFileSelected(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    if (!input.files || input.files.length === 0) {
+      return;
+    }
+
+    const file = input.files[0];
+
+    if (!this.isImageFile(file)) {
+      this.errorMessage = 'Only image files are allowed.';
+      return;
+    }
+
+    if (file.size > 5 * 1024 * 1024) {
+      this.errorMessage = 'Image must be smaller than 5MB.';
+      return;
+    }
+
+    if (this.selectedFilePreviewUrl) {
+      URL.revokeObjectURL(this.selectedFilePreviewUrl);
+    }
+
+    this.selectedFile = file;
+    this.selectedFilePreviewUrl = URL.createObjectURL(file);
+    this.errorMessage = '';
+    
+    setTimeout(() => {
+      this.cdr.markForCheck();
     });
   }
 
-  onFileSelected(event: Event): void {
-  const input = event.target as HTMLInputElement;
-  if (!input.files || input.files.length === 0) {
-    return;
-  }
-
-  const file = input.files[0];
-
-  // Basic validation
-  if (!file.type.startsWith('image/')) {
-    this.errorMessage = 'Only image files are allowed.';
-    return;
-  }
-
-  if (file.size > 5 * 1024 * 1024) {
-    this.errorMessage = 'Image must be smaller than 5MB.';
-    return;
-  }
-
-  this.selectedFile = file;
-  this.errorMessage = '';
-}
-
   uploadImage(): void {
-  if (!this.createdListingId || !this.selectedFile) {
-    this.errorMessage = 'Please select an image file.';
-    return;
-  }
-
-  this.isUploading = true;
-  this.errorMessage = '';
-  this.crd.detectChanges();
-
-  this.carListingService.uploadImage(
-    this.createdListingId,
-    this.selectedFile,
-    this.imagePosition
-  ).subscribe({
-    next: (response) => {
-      this.uploadedImages.push(response);
-      this.selectedFile = null;
-      this.isUploading = false;
-      this.successMessage = 'Image uploaded successfully!';
-    },
-    error: (error) => {
-      console.error('Upload error:', error);
-      this.errorMessage = 'Failed to upload image.';
-      this.isUploading = false;
+    if (!this.createdListingId) {
+      this.errorMessage = 'Please create a listing first or listing ID is missing.';
+      return;
     }
-  });
-}
+    
+    if (!this.selectedFile) {
+      this.errorMessage = 'Please select an image file.';
+      return;
+    }
+
+    this.isUploading = true;
+    this.errorMessage = '';
+    this.successMessage = '';
+
+    setTimeout(() => {
+      this.carListingService.uploadImage(
+        this.createdListingId!, 
+        this.selectedFile!,
+        this.imagePosition
+      ).pipe(
+        catchError(error => {
+          console.error('Upload error details:', {
+            status: error.status,
+            url: error.url,
+            message: error.message
+          });
+          
+          if (error.status === 404) {
+            this.errorMessage = `API endpoint not found. The endpoint '${error.url}' doesn't exist.`;
+          } else if (error.status === 0) {
+            this.errorMessage = 'Cannot connect to server. Make sure the backend is running.';
+          } else {
+            this.errorMessage = `Failed to upload image: ${error.status} ${error.statusText}`;
+          }
+          
+          this.isUploading = false;
+          this.cdr.markForCheck();
+          return of(null);
+        }),
+        finalize(() => {
+          this.isUploading = false;
+          this.clearSelectedFile(); 
+        })
+      ).subscribe(response => {
+        if (response) {
+          this.uploadedImages.push(response);
+          this.successMessage = 'Image uploaded successfully!';
+          console.log('Image uploaded:', response);
+        }
+        this.cdr.markForCheck();
+      });
+    });
+  }
 
   removeImage(imageId: string): void {
     this.uploadedImages = this.uploadedImages.filter(img => img.id !== imageId);
@@ -193,6 +236,110 @@ export class PostCar implements OnInit {
     });
   }
 
+  getImagePreview(file: File): string {
+    const blobUrl = URL.createObjectURL(file);
+    this.blobUrls.push(blobUrl); // Track for cleanup
+    return blobUrl;
+  }
+
+  getDisplayImageUrl(imageUrl: string): string {
+    if (imageUrl.startsWith('http://') || imageUrl.startsWith('https://') || imageUrl.startsWith('data:')) {
+      return imageUrl;
+    }
+    
+    if (imageUrl.startsWith('/uploads/')) {
+      const baseUrl = 'http://localhost:8081';
+      return `${baseUrl}${imageUrl}`;
+    }
+    
+    return imageUrl;
+  }
+
+  private cleanupBlobUrls(): void {
+    this.blobUrls.forEach(url => URL.revokeObjectURL(url));
+    this.blobUrls = [];
+  }
+
+  ngOnDestroy(): void {
+    if (this.selectedFilePreviewUrl) {
+      URL.revokeObjectURL(this.selectedFilePreviewUrl);
+    }
+    this.cleanupBlobUrls();
+  }
+
+
+  handleImageError(event: Event): void {
+    const img = event.target as HTMLImageElement;
+    
+    if (img.classList.contains('fallback-image')) {
+      img.style.display = 'none';
+      return;
+    }
+    
+    if (img.src.startsWith('blob:')) {
+      try {
+        URL.revokeObjectURL(img.src);
+      } catch (e) {
+        console.warn('Failed to revoke blob URL:', e);
+      }
+    }
+    
+    img.src = 'https://placehold.co/400x300/cccccc/666666?text=No+Image+Available';
+    img.classList.add('fallback-image');
+    img.alt = 'Image not available';
+    
+    img.onerror = null;
+  }
+
+
+getUserInitials(): string {
+  if (!this.userEmail) return 'U';
+  
+  const username = this.userEmail.split('@')[0];
+  
+  const parts = username.split('.');
+  if (parts.length >= 2) {
+    return (parts[0].charAt(0) + parts[1].charAt(0)).toUpperCase();
+  }
+  
+  return username.charAt(0).toUpperCase();
+}
+
+
+clearSelectedFile(): void {
+    if (this.selectedFilePreviewUrl) {
+      URL.revokeObjectURL(this.selectedFilePreviewUrl);
+      this.selectedFilePreviewUrl = null;
+    }
+    
+    this.selectedFile = null;
+    
+    const fileInput = document.querySelector('input[type="file"]') as HTMLInputElement;
+    if (fileInput) {
+      fileInput.value = '';
+    }
+  }
+
+ isImageFile(file: File): boolean {
+    return file.type.startsWith('image/');
+  }
+
+ getSelectedFileName(): string {
+    return this.selectedFile ? this.selectedFile.name : '';
+  }
+
+  getSelectedFileSize(): string {
+    return this.selectedFile ? this.getFileSize(this.selectedFile.size) : '0 Bytes';
+  }
+
+    getFileSize(bytes: number): string {
+    if (bytes === 0) return '0 Bytes';
+    const k = 1024;
+    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+  }
+
   goToProfile(): void {
     this.router.navigate(['/profile']);
   }
@@ -204,44 +351,6 @@ export class PostCar implements OnInit {
     this.router.navigate(['/dashboard']);
   }
 
-  getUserInitials(): string {
-    if (!this.userEmail) return 'U';
-    const email = this.userEmail.split('@')[0];
-    return email.charAt(0).toUpperCase();
-  }
-
-  getFileSize(bytes: number): string {
-    if (bytes === 0) return '0 Bytes';
-    const k = 1024;
-    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
-    const i = Math.floor(Math.log(bytes) / Math.log(k));
-    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
-  }
-
-  isImageFile(file: File): boolean {
-    return file.type.startsWith('image/');
-  }
-
-  getImagePreview(file: File): string {
-    return URL.createObjectURL(file);
-  }
-
-  clearSelectedFile(): void {
-    this.selectedFile = null;
-    this.crd.detectChanges();
-  }
-
-    handleImageError(event: Event): void {
-    const img = event.target as HTMLImageElement;
-    img.src = 'assets/default-car.jpg'; // Fallback image
-  }
-
-   getDisplayImageUrl(imageUrl: string): string {
-    // If it's a data URL or absolute URL, use it directly
-    if (imageUrl.startsWith('data:') || imageUrl.startsWith('http')) {
-      return imageUrl;
-    }
-    // Otherwise, assume it's a relative path
-    return imageUrl;
-  }
+ 
 }
+  

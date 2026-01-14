@@ -966,4 +966,19 @@ input[readonly] {
   .uploaded-image {
     height: 100px;
   }
+
+  
+}
+
+.fallback-image {
+  background-color: #f0f0f0;
+  border: 1px dashed #ccc;
+  padding: 20px;
+  text-align: center;
+}
+
+.preview-thumbnail {
+  max-width: 200px;
+  max-height: 150px;
+  object-fit: cover;
 }

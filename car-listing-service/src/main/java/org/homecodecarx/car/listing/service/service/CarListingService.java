@@ -60,7 +60,7 @@ public class CarListingService {
 
         Files.copy(file.getInputStream(), filePath, StandardCopyOption.REPLACE_EXISTING);
 
-        String imageUrl = "/uploads/cars/" + listingId + "/" + fileName;
+        String imageUrl = "http://localhost:8081/uploads/cars/" + listingId + "/" + fileName;
 
         CarImage image = CarImage.builder()
                 .listingId(UUID.fromString(listingId))

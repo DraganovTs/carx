@@ -55,12 +55,12 @@ export class CarListingService {
 
   uploadImage(listingId: string, file: File, position: number) {
   const formData = new FormData();
-  formData.append('image', file);
+  formData.append('file', file);
   formData.append('position', position.toString());
 
   return this.http.post<CarImageResponse>(
-    `/api/listings/${listingId}/images`,
-    formData
-  );
+      `${this.apiUrl}/${listingId}/images`,
+      formData
+    );
 }
 }
