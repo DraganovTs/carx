@@ -72,9 +72,12 @@
       <!-- Left Column: Form -->
       <div class="form-column">
         <div class="form-header">
-          <h2><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M12 5v14M5 12h14"/>
-          </svg> List Your Car</h2>
+          <h2>
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M12 5v14M5 12h14"/>
+            </svg> 
+            List Your Car
+          </h2>
           <p>Fill in the details about your vehicle. All fields marked with * are required.</p>
         </div>
 
@@ -514,44 +517,50 @@
           
           <div class="image-upload-form">
             <div class="form-group">
-              <label>Upload Image from Your Computer</label>
+              <label>Upload Images from Your Computer</label>
               <input 
                 type="file" 
                 accept="image/*"
                 (change)="onFileSelected($event)"
                 class="file-input"
+                multiple
               >
-              <small class="form-hint">Supported formats: JPG, PNG, WebP. Max size: 5MB</small>
+              <small class="form-hint">Supported formats: JPG, PNG, WebP. Max size: 5MB per image</small>
             </div>
 
-            <div class="form-group" *ngIf="selectedFile">
-              <label>Selected File</label>
-              <div class="selected-file-info">
-                <div class="file-details">
-                  <strong>{{ selectedFile.name }}</strong>
-                  <span class="file-size">({{ getFileSize(selectedFile.size) }})</span>
+            <!-- Show selected files count -->
+            <div *ngIf="selectedFiles.length > 0" class="selected-files-summary">
+              <p>{{ getSelectedFilesCount() }} image(s) selected ({{ getTotalFileSize() }})</p>
+            </div>
+
+            <!-- Show previews for all selected files -->
+            <div *ngIf="selectedFiles.length > 0" class="selected-files-preview">
+              <div class="file-preview-grid">
+                <div class="file-preview-item" *ngFor="let preview of selectedFilePreviewUrls; let i = index">
+                  <div class="preview-container">
+                    <img 
+                      [src]="preview.url" 
+                      alt="Preview" 
+                      class="preview-thumbnail"
+                      (error)="handleImageError($event)"
+                    >
+                    <button class="btn-remove-preview" (click)="clearSelectedFile(i)" title="Remove">
+                      <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="18" y1="6" x2="6" y2="18"></line>
+                        <line x1="6" y1="6" x2="18" y2="18"></line>
+                      </svg>
+                    </button>
+                  </div>
+                  <div class="file-info">
+                    <div class="file-name">{{ preview.file.name }}</div>
+                    <div class="file-size">{{ getFileSize(preview.file.size) }}</div>
+                  </div>
                 </div>
-                <div class="file-preview" *ngIf="isImageFile(selectedFile)">
-                  <div class="file-preview" *ngIf="selectedFile && isImageFile(selectedFile)">
-  <img 
-    [src]="selectedFilePreviewUrl" 
-    alt="Preview" 
-    class="preview-thumbnail"
-    (error)="handleImageError($event)">
-</div>
-                </div>
-                <button type="button" class="btn-remove-file" (click)="clearSelectedFile()">
-                  <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <line x1="18" y1="6" x2="6" y2="18"></line>
-                    <line x1="6" y1="6" x2="18" y2="18"></line>
-                  </svg>
-                  Remove
-                </button>
               </div>
             </div>
             
             <div class="form-group">
-              <label>Image Position in Gallery</label>
+              <label>Starting Image Position in Gallery</label>
               <select 
                 [(ngModel)]="imagePosition"
                 class="position-select"
@@ -565,18 +574,54 @@
               <small class="form-hint">Position 0 will be displayed as the main image</small>
             </div>
             
-            <button 
-  type="button" 
-  class="btn-upload" 
-  (click)="uploadImage()"
-  [disabled]="!createdListingId || !selectedFile || isUploading">
-  {{ isUploading ? 'Uploading...' : 'Upload Image' }}
-</button>
-
-<!-- Show message if no listing created -->
-<div *ngIf="!createdListingId && selectedFile" class="alert alert-info">
-  Please create the listing first before uploading images.
-</div>
+            <!-- Upload buttons -->
+            <div class="upload-buttons">
+              <button 
+                type="button" 
+                class="btn-upload" 
+                (click)="uploadImage()"
+                [disabled]="!createdListingId || selectedFiles.length === 0 || isUploading || isUploadingAll"
+              >
+                {{ isUploading ? 'Uploading...' : 'Upload Image(s)' }}
+              </button>
+              
+              <button 
+                *ngIf="selectedFiles.length > 1"
+                type="button" 
+                class="btn-upload-all" 
+                (click)="uploadAllImages()"
+                [disabled]="!createdListingId || isUploading || isUploadingAll"
+              >
+                {{ isUploadingAll ? 'Uploading All...' : 'Upload All (' + selectedFiles.length + ')' }}
+              </button>
+            </div>
+            
+            <!-- Show message if no listing created -->
+            <div *ngIf="!createdListingId && selectedFiles.length > 0" class="alert alert-info">
+              Please create the listing first before uploading images.
+            </div>
+            
+            <!-- Finish button after uploads -->
+            <div class="finish-section" *ngIf="uploadedImages.length > 0">
+              <div class="success-message">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+                  <polyline points="22 4 12 14.01 9 11.01"></polyline>
+                </svg>
+                {{ uploadedImages.length }} image(s) uploaded successfully!
+              </div>
+              
+              <button 
+                type="button" 
+                class="btn-finish"
+                (click)="finishAndReturn()"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M20 6L9 17l-5-5"/>
+                </svg>
+                Finish & Return to Dashboard
+              </button>
+            </div>
             
             <div class="uploaded-images" *ngIf="uploadedImages.length > 0">
               <h4>Uploaded Images ({{ uploadedImages.length }})</h4>
@@ -616,8 +661,8 @@
             </div>
           </div>
         </div>
-      </div> <!-- Closing div for preview-column -->
-    </div> <!-- Closing div for post-car-container -->
+      </div>
+    </div>
   </main>
 
   <!-- Footer -->
