@@ -25,7 +25,7 @@ public class CarListingMapper {
                 .brand(request.getBrand())
                 .model(request.getModel())
                 .location(request.getLocation())
-                .status(ListingStatus.PENDING)
+                .status(ListingStatus.DRAFT)
                 .createdAt(LocalDateTime.now())
                 .build();
     }

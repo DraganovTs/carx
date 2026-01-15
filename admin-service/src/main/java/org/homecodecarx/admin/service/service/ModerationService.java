@@ -27,8 +27,7 @@ public class ModerationService {
         List<ListingModeration> byStatus = listingModerationRepository.findByStatus(ModerationStatus.PENDING);
         return byStatus
                 .stream()
-                .map(listingModeration ->
-                        listingModerationMapper::mapListingModerationToListingModerationDTO)
+                .map(listingModerationMapper::mapListingModerationToListingModerationDTO)
                 .collect(Collectors.toList());
     }
 

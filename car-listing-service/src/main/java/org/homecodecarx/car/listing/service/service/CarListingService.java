@@ -8,8 +8,10 @@ import org.homecodecarx.car.listing.service.model.dto.CarListingResponse;
 import org.homecodecarx.car.listing.service.model.dto.CreateCarListingRequest;
 import org.homecodecarx.car.listing.service.model.entity.CarImage;
 import org.homecodecarx.car.listing.service.model.entity.CarListing;
+import org.homecodecarx.car.listing.service.model.enums.ListingStatus;
 import org.homecodecarx.car.listing.service.repository.CarImageRepository;
 import org.homecodecarx.car.listing.service.repository.CarListingRepository;
+import org.homecodecarx.common.domain.DomainEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -28,13 +30,15 @@ public class CarListingService {
     private final CarListingMapper carListingMapper;
     private final CarImageRepository carImageRepository;
     private final ImageMapper imageMapper;
+    private final DomainEventPublisher publisher;
 
     public CarListingService(CarListingRepository carListingRepository, CarListingMapper carListingMapper,
-                             CarImageRepository carImageRepository, ImageMapper imageMapper) {
+                             CarImageRepository carImageRepository, ImageMapper imageMapper, DomainEventPublisher publisher) {
         this.carListingRepository = carListingRepository;
         this.carListingMapper = carListingMapper;
         this.carImageRepository = carImageRepository;
         this.imageMapper = imageMapper;
+        this.publisher = publisher;
     }
 
     public CarListingResponse listCar(CreateCarListingRequest request) {
@@ -76,5 +80,15 @@ public class CarListingService {
                 .position(position)
                 .listingId(UUID.fromString(listingId))
                 .build();
+    }
+
+    public void submitForApproval(String listingId) {
+        CarListing carListing = carListingRepository.findById(UUID.fromString(listingId))
+                .orElseThrow(() -> new CarNotFoundException("Car not found whit id: " + listingId));
+
+        carListing.setStatus(ListingStatus.SUBMIT_FOR_APPROVAL);
+
+        publisher.publish();
+
     }
 }

@@ -45,6 +45,12 @@ public class CarListingController {
         return ResponseEntity.ok(carListingService.addImage(id, file, position));
     }
 
+    @PostMapping(value = "/{id}/submit")
+    public ResponseEntity<Void>submit(@PathVariable("id") String listingId){
+        carListingService.submitForApproval(listingId);
+        return ResponseEntity.ok().build();
+    }
+
 
 
 }
