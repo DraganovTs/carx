@@ -12,7 +12,9 @@ import org.homecodecarx.car.listing.service.model.enums.ListingStatus;
 import org.homecodecarx.car.listing.service.repository.CarImageRepository;
 import org.homecodecarx.car.listing.service.repository.CarListingRepository;
 import org.homecodecarx.common.domain.DomainEventPublisher;
+import org.homecodecarx.common.domain.events.CarListingSubmittedEvent;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
@@ -20,6 +22,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
+import java.util.Locale;
 import java.util.UUID;
 
 @Service
@@ -51,10 +54,10 @@ public class CarListingService {
         return carListingMapper.mapCarListToCarListingresponse(carListing);
     }
 
+    @Transactional
     public CarImageResponse addImage(String listingId, MultipartFile file, int position) throws IOException {
 
-        CarListing carListing = carListingRepository.findById(UUID.fromString(listingId))
-                .orElseThrow(() -> new CarNotFoundException("Car not found whit id: " + listingId));
+        CarListing carListing = getCarListingById(UUID.fromString(listingId));
 
         Path uploadDir = Paths.get("uploads/cars/" + carListing.getId().toString());
         Files.createDirectories(uploadDir);
@@ -82,13 +85,26 @@ public class CarListingService {
                 .build();
     }
 
-    public void submitForApproval(String listingId) {
-        CarListing carListing = carListingRepository.findById(UUID.fromString(listingId))
-                .orElseThrow(() -> new CarNotFoundException("Car not found whit id: " + listingId));
+    @Transactional
+    public void submitForApproval(UUID listingId) {
+        CarListing carListing = getCarListingById(listingId);
 
         carListing.setStatus(ListingStatus.SUBMIT_FOR_APPROVAL);
+        carListingRepository.save(carListing);
+        publisher.publish(new CarListingSubmittedEvent(listingId));
 
-        publisher.publish();
+    }
 
+    private CarListing getCarListingById(UUID listingId) {
+        return carListingRepository.findById(listingId)
+                .orElseThrow(() -> new CarNotFoundException("Car not found whit id: " + listingId));
+    }
+    
+    
+
+    private  String getString(String string){
+        String upperCase = string.toUpperCase(Locale.ROOT); 
+        String lowerCase = upperCase.toLowerCase(Locale.ROOT);
+        return string;
     }
 }

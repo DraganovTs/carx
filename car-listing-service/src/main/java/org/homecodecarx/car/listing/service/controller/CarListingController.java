@@ -46,7 +46,7 @@ public class CarListingController {
     }
 
     @PostMapping(value = "/{id}/submit")
-    public ResponseEntity<Void>submit(@PathVariable("id") String listingId){
+    public ResponseEntity<Void>submit(@PathVariable("id") UUID listingId){
         carListingService.submitForApproval(listingId);
         return ResponseEntity.ok().build();
     }
