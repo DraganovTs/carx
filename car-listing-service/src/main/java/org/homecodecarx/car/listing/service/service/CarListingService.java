@@ -22,7 +22,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
-import java.util.Locale;
 import java.util.UUID;
 
 @Service
@@ -102,9 +101,5 @@ public class CarListingService {
     
     
 
-    private  String getString(String string){
-        String upperCase = string.toUpperCase(Locale.ROOT); 
-        String lowerCase = upperCase.toLowerCase(Locale.ROOT);
-        return string;
-    }
+
 }

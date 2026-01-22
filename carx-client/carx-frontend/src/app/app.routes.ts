@@ -24,6 +24,7 @@ export const routes: Routes = [
     loadComponent: () => import('./components/post-car/post-car').then(m => m.PostCar),
     canActivate: [authGuard]
   },
+  
 
   // Default route → dashboard
   { path: '', redirectTo: '/dashboard', pathMatch: 'full' }
