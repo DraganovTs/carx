@@ -7,11 +7,12 @@ import { BehaviorSubject } from 'rxjs';
 })
 export class AuthService {
   private loggedIn = new BehaviorSubject<boolean>(this.hasToken());
+  private role = new BehaviorSubject<string | null>(localStorage.getItem('role'));
   
+      isLoggedIn$ = this.loggedIn.asObservable();
+      role$ = this.role.asObservable();
 
-  get isLoggedIn$() {
-    return this.loggedIn.asObservable();
-  }
+  
 
   constructor(private router: Router) {}
 
@@ -29,6 +30,14 @@ export class AuthService {
     localStorage.setItem('userEmail', email);
     this.loggedIn.next(true);
     this.router.navigate(['/dashboard']);
+  }
+
+   getRole(): string | null {
+    return localStorage.getItem('role');
+  }
+
+  isAdmin(): boolean {
+    return this.getRole() === 'ADMIN';
   }
 
   logout(): void {
