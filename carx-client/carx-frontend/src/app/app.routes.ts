@@ -2,6 +2,7 @@ import { Routes } from '@angular/router';
 import { Login } from './components/login/login';
 import { Register } from './components/register/register';
 import { authGuard } from './guards/auth-guard';
+import { adminGuard } from './guards/admin-guard';
 
 export const routes: Routes = [
   { path: 'login', component: Login },
@@ -17,7 +18,7 @@ export const routes: Routes = [
   { 
     path: 'admin/users', 
     loadComponent: () => import('./components/admin/users/users').then(m => m.Users),
-    canActivate: [authGuard, adminGuard] // Both auth and admin guards
+    canActivate: [authGuard, adminGuard] 
   },
   { 
     path: 'admin/pending-cars', 

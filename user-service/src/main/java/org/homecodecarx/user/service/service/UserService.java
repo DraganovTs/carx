@@ -92,8 +92,11 @@ public class UserService {
     }
 
     private AuthResponse generateAuthResponse(User user, String message) {
-        String token = jwtService.generateToken(user.getEmail(), user.getId().toString());
-        return userMapper.mapUserToAuthResponse(user, message, token);
+        String token = jwtService.generateToken(
+                user.getEmail(),
+                user.getId().toString(),
+                user.getRole().toString());
+        return userMapper.mapUserToAuthResponse(user, message, token , user.getRole().toString());
     }
 
 

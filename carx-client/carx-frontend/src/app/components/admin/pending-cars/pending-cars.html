@@ -1,0 +1,62 @@
+<div class="admin-pending-cars-page">
+  <header class="admin-header">
+    <h1>Pending Car Approvals</h1>
+    <p>Review and approve/reject car listings</p>
+  </header>
+
+  <main class="admin-content">
+    @if (isLoading) {
+      <div class="loading">Loading pending cars...</div>
+    } @else if (error) {
+      <div class="error">{{ error }}</div>
+    } @else {
+      <div class="cars-grid">
+        @for (car of pendingCars; track car.id) {
+          <div class="car-card pending">
+            <div class="card-image">
+              <img [src]="car.mainImageUrl || 'assets/default-car.jpg'" [alt]="car.title" />
+              <div class="status-badge">PENDING</div>
+            </div>
+            
+            <div class="card-content">
+              <h3>{{ car.title }}</h3>
+              <div class="car-details">
+                <div class="detail">
+                  <strong>Price:</strong> ${{ formatPrice(car.price) }}
+                </div>
+                <div class="detail">
+                  <strong>Year:</strong> {{ car.year }}
+                </div>
+                <div class="detail">
+                  <strong>Mileage:</strong> {{ car.mileage }} km
+                </div>
+                <div class="detail">
+                  <strong>Location:</strong> {{ car.location }}
+                </div>
+                <div class="detail">
+                  <strong>Posted by:</strong> {{ car.userEmail }}
+                </div>
+              </div>
+              
+              <div class="card-actions">
+                <button class="btn-view" (click)="viewCarDetails(car.id)">
+                  View Details
+                </button>
+                <button class="btn-approve" (click)="approveCar(car.id)">
+                  Approve
+                </button>
+                <button class="btn-reject" (click)="rejectCar(car.id)">
+                  Reject
+                </button>
+              </div>
+            </div>
+          </div>
+        } @empty {
+          <div class="empty-state">
+            <p>No pending car approvals</p>
+          </div>
+        }
+      </div>
+    }
+  </main>
+</div>

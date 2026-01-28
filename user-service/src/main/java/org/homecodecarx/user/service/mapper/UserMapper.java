@@ -20,12 +20,13 @@ public class UserMapper {
                 .build();
     }
 
-    public AuthResponse mapUserToAuthResponse(User user, String message, String token) {
+    public AuthResponse mapUserToAuthResponse(User user, String message, String token,String role) {
         return AuthResponse.builder()
                 .userId(user.getId().toString())
                 .email(user.getEmail())
                 .message(message)
                 .token(token)
+                .role(role)
                 .build();
     }
 

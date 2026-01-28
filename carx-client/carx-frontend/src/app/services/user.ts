@@ -30,6 +30,7 @@ export interface AuthResponse {
   message: string;
   email: string;
   userId: string;
+  role?: string;
 }
 
 @Injectable({

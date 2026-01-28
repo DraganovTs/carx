@@ -29,28 +29,28 @@ export class Login {
 
   onSubmit() {
     this.isLoading = true;
-    this.errorMessage = '';
+  this.errorMessage = '';
 
-    if (!this.credentials.email || !this.credentials.password) {
-      this.errorMessage = 'Please enter email and password';
-      this.isLoading = false;
-      return;
-    }
-
-    this.userService.login(this.credentials).subscribe({
-      next: (response: AuthResponse) => {
-        this.isLoading = false;
-        this.authService.login(response.token, response.email);
-      },
-      error: (error) => {
-        this.isLoading = false;
-        if (error.status === 401 || error.status === 400) {
-          this.errorMessage = error.error?.message || 'Invalid email or password';
-        } else {
-          this.errorMessage = 'Login failed. Please try again.';
-        }
-        console.error('Login error:', error);
-      }
-    });
+  if (!this.credentials.email || !this.credentials.password) {
+    this.errorMessage = 'Please enter email and password';
+    this.isLoading = false;
+    return;
   }
+
+  this.userService.login(this.credentials).subscribe({
+    next: (response: AuthResponse) => {
+      this.isLoading = false;
+      this.authService.login(response.token, response.email, response.role);
+    },
+    error: (error) => {
+      this.isLoading = false;
+      if (error.status === 401 || error.status === 400) {
+        this.errorMessage = error.error?.message || 'Invalid email or password';
+      } else {
+        this.errorMessage = 'Login failed. Please try again.';
+      }
+      console.error('Login error:', error);
+    }
+  });
+}
 }

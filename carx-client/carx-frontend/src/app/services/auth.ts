@@ -22,13 +22,17 @@ export class AuthService {
     return this.hasToken();
   }
 
-  // UPDATED: Add role parameter
-  login(token: string, email: string, role: string): void {
+ 
+  login(token: string, email: string, role?: string): void {
     localStorage.setItem('token', token);
     localStorage.setItem('userEmail', email);
-    localStorage.setItem('role', role); 
+    
+    if (role) {
+      localStorage.setItem('role', role);
+      this.role.next(role);
+    }
+    
     this.loggedIn.next(true);
-    this.role.next(role); 
     this.router.navigate(['/dashboard']);
   }
 
@@ -69,4 +73,13 @@ export class AuthService {
       role: this.getRole()
     };
   }
+
+  getRoleFromToken(token: string): string | null {
+  try {
+    const payload = JSON.parse(atob(token.split('.')[1]));
+    return payload.role || null;
+  } catch (e) {
+    return null;
+  }
+}
 }
