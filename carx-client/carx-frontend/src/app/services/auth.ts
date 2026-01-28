@@ -9,10 +9,8 @@ export class AuthService {
   private loggedIn = new BehaviorSubject<boolean>(this.hasToken());
   private role = new BehaviorSubject<string | null>(localStorage.getItem('role'));
   
-      isLoggedIn$ = this.loggedIn.asObservable();
-      role$ = this.role.asObservable();
-
-  
+  isLoggedIn$ = this.loggedIn.asObservable();
+  role$ = this.role.asObservable();
 
   constructor(private router: Router) {}
 
@@ -20,30 +18,35 @@ export class AuthService {
     return !!localStorage.getItem('token');
   }
 
-
   isLoggedIn(): boolean {
     return this.hasToken();
   }
 
-  login(token: string, email: string): void {
+  // UPDATED: Add role parameter
+  login(token: string, email: string, role: string): void {
     localStorage.setItem('token', token);
     localStorage.setItem('userEmail', email);
+    localStorage.setItem('role', role); 
     this.loggedIn.next(true);
+    this.role.next(role); 
     this.router.navigate(['/dashboard']);
   }
 
-   getRole(): string | null {
+  getRole(): string | null {
     return localStorage.getItem('role');
   }
 
   isAdmin(): boolean {
-    return this.getRole() === 'ADMIN';
+    const role = this.getRole();
+    return role === 'ADMIN';
   }
 
   logout(): void {
     localStorage.removeItem('token');
     localStorage.removeItem('userEmail');
+    localStorage.removeItem('role'); 
     this.loggedIn.next(false);
+    this.role.next(null);
     this.router.navigate(['/login']);
   }
 
@@ -53,5 +56,17 @@ export class AuthService {
 
   getEmail(): string | null {
     return localStorage.getItem('userEmail');
+  }
+
+  // Helper method to get user data
+  getUser(): { email: string | null, role: string | null } | null {
+    if (!this.isLoggedIn()) {
+      return null;
+    }
+    
+    return {
+      email: this.getEmail(),
+      role: this.getRole()
+    };
   }
 }

@@ -1,7 +1,5 @@
-<nav *ngIf="isLoggedIn">
-  <a routerLink="/dashboard">Dashboard</a>
-  <a routerLink="/profile">Profile</a>
-  <button (click)="logout()">Logout</button>
-</nav>
+@if (isAdmin) {
+  <app-navbar></app-navbar>
+}
 
 <router-outlet></router-outlet>

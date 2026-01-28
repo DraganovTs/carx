@@ -7,13 +7,25 @@ export const routes: Routes = [
   { path: 'login', component: Login },
   { path: 'register', component: Register },
 
-  // PUBLIC DASHBOARD (lazy loaded, no auth guard)
+  // PUBLIC DASHBOARD
   { 
     path: 'dashboard', 
     loadComponent: () => import('./components/dashboard/dashboard').then(m => m.Dashboard)
   },
 
-  // Protected routes stay guarded
+  // ADMIN ROUTES (admin only)
+  { 
+    path: 'admin/users', 
+    loadComponent: () => import('./components/admin/users/users').then(m => m.Users),
+    canActivate: [authGuard, adminGuard] // Both auth and admin guards
+  },
+  { 
+    path: 'admin/pending-cars', 
+    loadComponent: () => import('./components/admin/pending-cars/pending-cars').then(m => m.PendingCars),
+    canActivate: [authGuard, adminGuard]
+  },
+
+  // USER ROUTES (authenticated users)
   { 
     path: 'profile', 
     loadComponent: () => import('./components/user-profile/user-profile').then(m => m.UserProfile),
@@ -24,8 +36,7 @@ export const routes: Routes = [
     loadComponent: () => import('./components/post-car/post-car').then(m => m.PostCar),
     canActivate: [authGuard]
   },
-  
 
-  // Default route → dashboard
+  // Default route
   { path: '', redirectTo: '/dashboard', pathMatch: 'full' }
 ];

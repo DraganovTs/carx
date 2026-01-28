@@ -1,17 +1,17 @@
 import { Component } from '@angular/core';
 import { Router } from '@angular/router';
+import { CommonModule } from '@angular/common';
 import { AuthService } from '../../services/auth';
 
 @Component({
   selector: 'app-navbar',
-  imports: [],
+  standalone: true,
+  imports: [CommonModule],
   templateUrl: './navbar.html',
   styleUrl: './navbar.css',
 })
 export class Navbar {
- isLoggedIn = false;
-  isAdmin = false;
-  userEmail = '';
+  userEmail: string | null = null;
 
   constructor(
     private authService: AuthService,
@@ -19,22 +19,22 @@ export class Navbar {
   ) {}
 
   ngOnInit() {
-    const user = this.authService.getUser();
-
-    this.isLoggedIn = !!user;
-    this.userEmail = user?.email;
-    this.isAdmin = user?.role === 'ADMIN';
+    // This navbar only shows for admins, so no need to check isAdmin
+    this.userEmail = this.authService.getEmail() ?? '';
   }
 
-  goHome() { this.router.navigate(['/dashboard']); }
-  goListings() { this.router.navigate(['/dashboard']); }
-  goPost() { this.router.navigate(['/post-car']); }
+  goHome() { 
+    this.router.navigate(['/dashboard']); 
+  }
 
-  goAdminUsers() { this.router.navigate(['/admin/users']); }
-  goPendingCars() { this.router.navigate(['/admin/pending-cars']); }
-
-  goLogin() { this.router.navigate(['/login']); }
-  goRegister() { this.router.navigate(['/register']); }
+  // Admin-only navigation
+  goAdminUsers() { 
+    this.router.navigate(['/admin/users']); 
+  }
+  
+  goPendingCars() { 
+    this.router.navigate(['/admin/pending-cars']); 
+  }
 
   logout() {
     this.authService.logout();
