@@ -5,6 +5,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.Optional;
@@ -20,9 +21,29 @@ public interface UserRepository extends JpaRepository<User, UUID> {
     Optional<User> findByEmail(String email);
 
 
+    // FIX: Add @Param annotation for named parameters
     @Query("SELECT u FROM User u WHERE " +
             "LOWER(u.email) LIKE LOWER(CONCAT('%', :search, '%')) OR " +
-            "LOWER(u.firstName) LIKE LOWER(CONCAT('%' , :search, '%')) OR " +
-            "LOWER(u.lastName) LIKE LOWER(CONCAT('%' , :search, '%'))")
-    Page<User> searchUsers(String search, Pageable pageable);
+            "LOWER(u.firstName) LIKE LOWER(CONCAT('%', :search, '%')) OR " +
+            "LOWER(u.lastName) LIKE LOWER(CONCAT('%', :search, '%'))")
+    Page<User> searchUsers(@Param("search") String search, Pageable pageable);
+
+    // ALTERNATIVE: Use positional parameters (simpler)
+    @Query("SELECT u FROM User u WHERE " +
+            "LOWER(u.email) LIKE LOWER(CONCAT('%', ?1, '%')) OR " +
+            "LOWER(u.firstName) LIKE LOWER(CONCAT('%', ?1, '%')) OR " +
+            "LOWER(u.lastName) LIKE LOWER(CONCAT('%', ?1, '%'))")
+    Page<User> searchUsersAlt(String search, Pageable pageable);
+
+    // ALTERNATIVE: Native query
+    @Query(value = "SELECT * FROM users u WHERE " +
+            "LOWER(u.email) LIKE LOWER(CONCAT('%', ?1, '%')) OR " +
+            "LOWER(u.first_name) LIKE LOWER(CONCAT('%', ?1, '%')) OR " +
+            "LOWER(u.last_name) LIKE LOWER(CONCAT('%', ?1, '%'))",
+            nativeQuery = true,
+            countQuery = "SELECT COUNT(*) FROM users u WHERE " +
+                    "LOWER(u.email) LIKE LOWER(CONCAT('%', ?1, '%')) OR " +
+                    "LOWER(u.first_name) LIKE LOWER(CONCAT('%', ?1, '%')) OR " +
+                    "LOWER(u.last_name) LIKE LOWER(CONCAT('%', ?1, '%'))")
+    Page<User> searchUsersNative(String search, Pageable pageable);
 }

@@ -1,63 +1,328 @@
 <div class="admin-users-page">
+  <!-- Header with Stats -->
   <header class="admin-header">
-    <h1>Manage Users</h1>
-    <p>View and manage all registered users</p>
+    <div class="header-title">
+      <h1>👥 User Management</h1>
+      <p>Manage all registered users in the CarX platform</p>
+    </div>
+    
+    <!-- Stats Cards -->
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="stat-icon">👤</div>
+        <div class="stat-content">
+          <div class="stat-value">{{ users.length }}</div>
+          <div class="stat-label">Total Users</div>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon">👑</div>
+        <div class="stat-content">
+          <div class="stat-value">{{ getRoleCount('ADMIN') }}</div>
+          <div class="stat-label">Admins</div>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon">💰</div>
+        <div class="stat-content">
+          <div class="stat-value">{{ getRoleCount('SELLER') }}</div>
+          <div class="stat-label">Sellers</div>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon">🛒</div>
+        <div class="stat-content">
+          <div class="stat-value">{{ getRoleCount('BUYER') }}</div>
+          <div class="stat-label">Buyers</div>
+        </div>
+      </div>
+    </div>
   </header>
 
+  <!-- Search and Actions Bar -->
+  <div class="action-bar">
+    <div class="search-box">
+      <input 
+        type="text" 
+        [(ngModel)]="searchQuery"
+        (keyup.enter)="searchUsers()"
+        placeholder="Search users by email or name..."
+        class="search-input"
+      >
+      <button (click)="searchUsers()" class="search-btn">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="11" cy="11" r="8"/>
+          <path d="m21 21-4.35-4.35"/>
+        </svg>
+      </button>
+    </div>
+    
+    <div class="table-actions">
+      <button (click)="exportUsers()" class="action-btn export">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+          <polyline points="7 10 12 15 17 10"/>
+          <line x1="12" y1="15" x2="12" y2="3"/>
+        </svg>
+        Export
+      </button>
+      <div class="view-toggle">
+        <button [class.active]="viewMode === 'table'" (click)="setViewMode('table')" class="view-btn">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
+            <line x1="3" y1="9" x2="21" y2="9"/>
+            <line x1="3" y1="15" x2="21" y2="15"/>
+            <line x1="9" y1="3" x2="9" y2="21"/>
+            <line x1="15" y1="3" x2="15" y2="21"/>
+          </svg>
+        </button>
+        <button [class.active]="viewMode === 'grid'" (click)="setViewMode('grid')" class="view-btn">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="3" y="3" width="7" height="7"/>
+            <rect x="14" y="3" width="7" height="7"/>
+            <rect x="3" y="14" width="7" height="7"/>
+            <rect x="14" y="14" width="7" height="7"/>
+          </svg>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Main Content -->
   <main class="admin-content">
     @if (isLoading) {
-      <div class="loading">Loading users...</div>
+      <div class="loading-container">
+        <div class="spinner"></div>
+        <p>Loading users...</p>
+      </div>
     } @else if (error) {
-      <div class="error">{{ error }}</div>
+      <div class="error-container">
+        <div class="error-icon">⚠️</div>
+        <h3>{{ error }}</h3>
+        <button (click)="loadUsers()" class="retry-btn">Try Again</button>
+      </div>
     } @else {
-      <div class="users-table-container">
-        <table class="users-table">
-          <thead>
-            <tr>
-              <th>ID</th>
-              <th>Email</th>
-              <th>Username</th>
-              <th>Role</th>
-              <th>Created</th>
-              <th>Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            @for (user of users; track user.id) {
+      <!-- Table View -->
+      @if (viewMode === 'table') {
+        <div class="table-container">
+          <table class="users-table">
+            <thead>
               <tr>
-                <td>{{ user.id }}</td>
-                <td>{{ user.email }}</td>
-                <td>{{ user.username || 'N/A' }}</td>
-                <td>
-                  <select 
-                    [(ngModel)]="user.role" 
-                    (change)="updateUserRole(user.id, user.role)"
-                    class="role-select"
-                  >
-                    <option value="USER">USER</option>
-                    <option value="ADMIN">ADMIN</option>
-                    <option value="MODERATOR">MODERATOR</option>
-                  </select>
-                </td>
-                <td>{{ formatDate(user.createdAt) }}</td>
-                <td>
+                <th>
+                  <div class="table-header">
+                    User
+                    <button (click)="sortBy('email')" class="sort-btn">
+                      @if (sortField === 'email') {
+                        <span>{{ sortDirection === 'asc' ? '↑' : '↓' }}</span>
+                      } @else {
+                        <span>↕</span>
+                      }
+                    </button>
+                  </div>
+                </th>
+                <th>
+                  <div class="table-header">
+                    Role
+                    <button (click)="sortBy('role')" class="sort-btn">
+                      @if (sortField === 'role') {
+                        <span>{{ sortDirection === 'asc' ? '↑' : '↓' }}</span>
+                      } @else {
+                        <span>↕</span>
+                      }
+                    </button>
+                  </div>
+                </th>
+                <th>
+                  <div class="table-header">
+                    Joined
+                    <button (click)="sortBy('createdAt')" class="sort-btn">
+                      @if (sortField === 'createdAt') {
+                        <span>{{ sortDirection === 'asc' ? '↑' : '↓' }}</span>
+                      } @else {
+                        <span>↕</span>
+                      }
+                    </button>
+                  </div>
+                </th>
+                <th>Status</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (user of filteredUsers; track user.id) {
+                <tr>
+                  <td>
+                    <div class="user-info">
+                      <div class="user-avatar">
+                        {{ getUserInitials(user.firstName, user.lastName) }}
+                      </div>
+                      <div class="user-details">
+                        <div class="user-name">{{ user.firstName }} {{ user.lastName }}</div>
+                        <div class="user-email">{{ user.email }}</div>
+                        @if (user.phone) {
+                          <div class="user-phone">{{ user.phone }}</div>
+                        }
+                      </div>
+                    </div>
+                  </td>
+                  <td>
+                    <div class="role-container">
+                      <span [class]="'role-badge ' + getRoleClass(user.role)">
+                        {{ user.role }}
+                      </span>
+                      <select 
+                        [(ngModel)]="user.role" 
+                        (change)="updateUserRole(user.id, user.role)"
+                        class="role-select"
+                      >
+                        <option value="ADMIN">ADMIN</option>
+                        <option value="SELLER">SELLER</option>
+                        <option value="BUYER">BUYER</option>
+                      </select>
+                    </div>
+                  </td>
+                  <td>
+                    <div class="date-cell">
+                      <div class="date">{{ formatDate(user.createdAt) }}</div>
+                      <div class="time">{{ formatTime(user.createdAt) }}</div>
+                    </div>
+                  </td>
+                  <td>
+                    <span class="status-badge active">Active</span>
+                  </td>
+                  <td>
+                    <div class="action-buttons">
+                      <button class="btn-edit" title="Edit User">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                          <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+                          <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+                        </svg>
+                      </button>
+                      <button 
+                        class="btn-delete"
+                        (click)="deleteUser(user.id, user.email)"
+                        [disabled]="user.email === currentUserEmail"
+                        title="Delete User"
+                      >
+                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                          <path d="M3 6h18M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+                        </svg>
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              } @empty {
+                <tr>
+                  <td colspan="5" class="empty-state">
+                    <div class="empty-content">
+                      <div class="empty-icon">👤</div>
+                      <h3>No users found</h3>
+                      @if (searchQuery) {
+                        <p>No users match "{{ searchQuery }}"</p>
+                        <button (click)="clearSearch()" class="clear-search">Clear search</button>
+                      } @else {
+                        <p>No users registered yet</p>
+                      }
+                    </div>
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      } @else {
+        <!-- Grid View -->
+        <div class="users-grid">
+          @for (user of filteredUsers; track user.id) {
+            <div class="user-card">
+              <div class="card-header">
+                <div class="user-avatar large">
+                  {{ getUserInitials(user.firstName, user.lastName) }}
+                </div>
+                <div class="user-name">{{ user.firstName }} {{ user.lastName }}</div>
+                <div class="user-email">{{ user.email }}</div>
+              </div>
+              
+              <div class="card-content">
+                <div class="user-detail">
+                  <span class="detail-label">Role:</span>
+                  <span [class]="'role-badge ' + getRoleClass(user.role)">
+                    {{ user.role }}
+                  </span>
+                </div>
+                <div class="user-detail">
+                  <span class="detail-label">Joined:</span>
+                  <span>{{ formatDate(user.createdAt) }}</span>
+                </div>
+                @if (user.phone) {
+                  <div class="user-detail">
+                    <span class="detail-label">Phone:</span>
+                    <span>{{ user.phone }}</span>
+                  </div>
+                }
+              </div>
+              
+              <div class="card-actions">
+                <select 
+                  [(ngModel)]="user.role" 
+                  (change)="updateUserRole(user.id, user.role)"
+                  class="role-select"
+                >
+                  <option value="ADMIN">ADMIN</option>
+                  <option value="SELLER">SELLER</option>
+                  <option value="BUYER">BUYER</option>
+                </select>
+                <div class="action-buttons">
+                  <button class="btn-edit">Edit</button>
                   <button 
                     class="btn-delete"
-                    (click)="deleteUser(user.id)"
-                    [disabled]="user.email === 'admin@abv.bg'"
+                    (click)="deleteUser(user.id, user.email)"
+                    [disabled]="user.email === currentUserEmail"
                   >
                     Delete
                   </button>
-                </td>
-              </tr>
-            } @empty {
-              <tr>
-                <td colspan="6" class="empty">No users found</td>
-              </tr>
-            }
-          </tbody>
-        </table>
-      </div>
+                </div>
+              </div>
+            </div>
+          } @empty {
+            <div class="empty-grid">
+              <div class="empty-icon">👤</div>
+              <h3>No users found</h3>
+              @if (searchQuery) {
+                <button (click)="clearSearch()" class="clear-search">Clear search</button>
+              }
+            </div>
+          }
+        </div>
+      }
+      
+      <!-- Pagination -->
+      @if (filteredUsers.length > 0) {
+        <div class="pagination">
+          <div class="pagination-info">
+            Showing {{ filteredUsers.length }} of {{ users.length }} users
+          </div>
+          <div class="pagination-controls">
+            <button (click)="prevPage()" [disabled]="currentPage === 0" class="page-btn">
+              ← Previous
+            </button>
+            <div class="page-numbers">
+              @for (page of getPageNumbers(); track page) {
+                <button 
+                  (click)="goToPage(page)"
+                  [class.active]="page === currentPage"
+                  class="page-number"
+                >
+                  {{ page + 1 }}
+                </button>
+              }
+            </div>
+            <button (click)="nextPage()" [disabled]="isLastPage()" class="page-btn">
+              Next →
+            </button>
+          </div>
+        </div>
+      }
     }
   </main>
 </div>
