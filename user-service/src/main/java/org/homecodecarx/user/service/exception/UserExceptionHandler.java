@@ -25,4 +25,14 @@ public class UserExceptionHandler extends BaseExceptionHandler {
     public ResponseEntity<ErrorResponseDTO> handlePasswordNotMatchException(Exception exception, WebRequest request) {
         return buildErrorResponse(exception, request, HttpStatus.BAD_REQUEST, "PASSWORD_OR_EMAIL_NOT_MATCH");
     }
+
+    @ExceptionHandler(value = {InvalidRoleException.class})
+    public ResponseEntity<ErrorResponseDTO> handleInvalidRoleException(Exception exception, WebRequest request) {
+        return buildErrorResponse(exception, request, HttpStatus.BAD_REQUEST, "INVALID_ROLE");
+    }
+
+    @ExceptionHandler(value = {RoleRequiredException.class})
+    public ResponseEntity<ErrorResponseDTO> handleRoleRequiredException(Exception exception, WebRequest request) {
+        return buildErrorResponse(exception, request, HttpStatus.FORBIDDEN, "ROLE_REQUIRED");
+    }
 }
