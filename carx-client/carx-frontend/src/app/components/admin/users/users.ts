@@ -1,5 +1,5 @@
 import { HttpClient } from '@angular/common/http';
-import { Component, OnInit } from '@angular/core';
+import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
 import { AuthService } from '../../../services/auth';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -28,7 +28,8 @@ export class Users implements OnInit {
 
   constructor(
     private http: HttpClient,
-    private authService: AuthService
+    private authService: AuthService,
+    private cdr: ChangeDetectorRef
   ) {}
 
   ngOnInit(): void {
@@ -37,24 +38,28 @@ export class Users implements OnInit {
   }
 
   loadUsers(): void {
-    this.isLoading = true;
-    const token = this.authService.getToken();
-    
-    this.http.get<any[]>('http://localhost:8080/api/admin/users', {
-      headers: { Authorization: `Bearer ${token}` }
-    }).subscribe({
-      next: (data) => {
-        this.users = data;
-        this.filterAndSortUsers();
-        this.isLoading = false;
-      },
-      error: (err) => {
-        this.error = 'Failed to load users';
-        this.isLoading = false;
-        console.error('Error loading users:', err);
-      }
-    });
-  }
+  this.isLoading = true;
+  
+
+  const token = this.authService.getToken();
+
+  this.http.get<any>('http://localhost:8080/api/admin/users', {
+    headers: { Authorization: `Bearer ${token}` }
+  }).subscribe({
+    next: (data) => {
+      this.users = data.content;
+      this.filterAndSortUsers();
+      this.isLoading = false;
+      this.cdr.detectChanges();
+      
+    },
+    error: (err) => {
+      console.error('ERROR', err);
+      this.isLoading = false;
+      this.cdr.detectChanges();
+    }
+  });
+}
 
   filterAndSortUsers(): void {
     // Filter
@@ -254,4 +259,14 @@ export class Users implements OnInit {
   isLastPage(): boolean {
     return this.currentPage >= Math.ceil(this.users.length / this.pageSize) - 1;
   }
+
+trackByEmail(index: number, user: any): string {
+  if (!user) return `empty-${index}`;
+  
+  if (user.id) return user.id;
+  
+  if (user.email) return user.email;
+  
+  return `user-${index}`;
+}
 }
