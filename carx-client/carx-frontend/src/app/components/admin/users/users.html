@@ -37,6 +37,8 @@
         </div>
       </div>
     </div>
+    
+    
   </header>
 
   <!-- Search and Actions Bar -->
@@ -192,7 +194,7 @@
                   </td>
                   <td>
                     <div class="action-buttons">
-                      <button class="btn-edit" title="Edit User">
+                      <button class="btn-edit" (click)="openEditUser(user)" title="Edit User">
                         <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                           <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
                           <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
@@ -326,3 +328,64 @@
     }
   </main>
 </div>
+
+@if (editingUser) {
+<div class="modal-backdrop" (click)="closeEdit()">
+  <div class="modal" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h2>Edit User: {{ editingUser.firstName }} {{ editingUser.lastName }}</h2>
+      <button class="modal-close" (click)="closeEdit()">×</button>
+    </div>
+    
+    <div class="modal-body">
+      <div class="form-group">
+        <label for="firstName">First Name:</label>
+        <input 
+          id="firstName"
+          type="text" 
+          [(ngModel)]="editForm.firstName"
+          class="form-input"
+        />
+      </div>
+      
+      <div class="form-group">
+        <label for="lastName">Last Name:</label>
+        <input 
+          id="lastName"
+          type="text" 
+          [(ngModel)]="editForm.lastName"
+          class="form-input"
+        />
+      </div>
+      
+      <div class="form-group">
+        <label for="phone">Phone:</label>
+        <input 
+          id="phone"
+          type="tel" 
+          [(ngModel)]="editForm.phone"
+          class="form-input"
+        />
+      </div>
+      
+      <div class="user-info-summary">
+        <p><strong>Email:</strong> {{ editingUser.email }}</p>
+        <p><strong>Role:</strong> <span [class]="'role-badge ' + getRoleClass(editingUser.role)">{{ editingUser.role }}</span></p>
+        <p><strong>Joined:</strong> {{ formatDate(editingUser.createdAt) }}</p>
+      </div>
+    </div>
+    
+    <div class="modal-footer">
+      <button class="btn-secondary" (click)="closeEdit()">Cancel</button>
+      <button class="btn-primary" (click)="saveUser()" [disabled]="isSaving">
+        @if (isSaving) {
+          <span class="loading-spinner"></span> Saving...
+        } @else {
+          Save Changes
+        }
+        
+      </button>
+    </div>
+  </div>
+</div>
+}

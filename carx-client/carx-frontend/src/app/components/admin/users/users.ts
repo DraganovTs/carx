@@ -25,6 +25,14 @@ export class Users implements OnInit {
   sortDirection = 'desc';
   viewMode: 'table' | 'grid' = 'table';
   currentUserEmail: string | null = null;
+  editingUser: any | null = null;
+  isSaving = false;
+
+  editForm = {
+    firstName: '',
+    lastName: '',
+    phone: ''
+  }
 
   constructor(
     private http: HttpClient,
@@ -269,4 +277,45 @@ trackByEmail(index: number, user: any): string {
   
   return `user-${index}`;
 }
+
+openEditUser(user: any): void {
+  this.editingUser = user;
+  this.editForm = {
+    firstName: user.firstName,
+    lastName: user.lastName,
+    phone: user.phone
+  };
+}
+
+saveUser(): void {
+  this.isSaving = true;
+  const token = this.authService.getToken();
+
+  this.http.put(
+    `http://localhost:8080/api/admin/users/${this.editingUser.id}`,
+    this.editForm,
+    { headers: { Authorization: `Bearer ${token}` } }
+  ).subscribe({
+    next: (updatedUser: any) => {
+      Object.assign(this.editingUser, updatedUser);
+      this.isSaving = false;
+      this.closeEdit();
+      alert('User updated successfully!');
+    },
+    error: (err) => {
+      this.isSaving = false;
+      alert(err.error?.message || 'Failed to update user');
+      console.error(err);
+    }
+  });
+}
+   closeEdit(): void {
+    this.editingUser = null;
+    this.editForm = {
+      firstName: '',
+      lastName: '',
+      phone: ''
+    };
+    this.isSaving = false;
+  }
 }
