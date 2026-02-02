@@ -13,6 +13,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Map;
 import java.util.UUID;
 
 @RestController
@@ -44,18 +45,22 @@ public class AdminController {
     }
 
     @PutMapping("/users/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<UserResponse> updateUser(
             @PathVariable UUID id,
             @Valid @RequestBody UserUpdateRequest request) {
+        System.out.println(request.toString());
         UserResponse updatedUser = adminService.updateUser(id, request);
         return ResponseEntity.ok(updatedUser);
     }
 
     @PutMapping("/users/{id}/role")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<UserResponse> updateUserRole(
             @PathVariable UUID id,
-            @RequestParam String role) {
-        UserResponse updatedUser = adminService.updateUserRole(id, role);
+            @RequestBody Map<String, String> body) {
+
+        UserResponse updatedUser = adminService.updateUserRole(id, body.get("role"));
         return ResponseEntity.ok(updatedUser);
     }
 

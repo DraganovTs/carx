@@ -33,6 +33,6 @@ public class UserExceptionHandler extends BaseExceptionHandler {
 
     @ExceptionHandler(value = {RoleRequiredException.class})
     public ResponseEntity<ErrorResponseDTO> handleRoleRequiredException(Exception exception, WebRequest request) {
-        return buildErrorResponse(exception, request, HttpStatus.FORBIDDEN, "ROLE_REQUIRED");
+        return buildErrorResponse(exception, request, HttpStatus.BAD_REQUEST, "ROLE_REQUIRED");
     }
 }

@@ -5,6 +5,6 @@ import org.springframework.http.HttpStatus;
 
 public class RoleRequiredException extends BaseException {
     public RoleRequiredException(String message) {
-        super(message, "ROLE_REQUIRED", HttpStatus.FORBIDDEN);
+        super(message, "ROLE_REQUIRED", HttpStatus.BAD_REQUEST);
     }
 }
