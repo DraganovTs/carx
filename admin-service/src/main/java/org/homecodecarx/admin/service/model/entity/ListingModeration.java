@@ -1,10 +1,7 @@
 package org.homecodecarx.admin.service.model.entity;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 import org.homecodecarx.admin.service.model.enums.ModerationStatus;
 
 import java.time.LocalDateTime;
@@ -12,6 +9,8 @@ import java.util.UUID;
 
 @Entity
 @Getter
+@AllArgsConstructor
+@Builder
 public class ListingModeration {
 
     @Id
