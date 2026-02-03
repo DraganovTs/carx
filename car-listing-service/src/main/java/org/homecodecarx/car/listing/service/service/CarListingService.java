@@ -1,5 +1,6 @@
 package org.homecodecarx.car.listing.service.service;
 
+import org.homecodecarx.car.listing.service.events.SimpleEventPublisher;
 import org.homecodecarx.car.listing.service.exception.CarNotFoundException;
 import org.homecodecarx.car.listing.service.mapper.CarListingMapper;
 import org.homecodecarx.car.listing.service.mapper.ImageMapper;
@@ -32,15 +33,17 @@ public class CarListingService {
     private final CarListingMapper carListingMapper;
     private final CarImageRepository carImageRepository;
     private final ImageMapper imageMapper;
-    private final DomainEventPublisher publisher;
+    private final SimpleEventPublisher publisher;
+
 
     public CarListingService(CarListingRepository carListingRepository, CarListingMapper carListingMapper,
-                             CarImageRepository carImageRepository, ImageMapper imageMapper, DomainEventPublisher publisher) {
+                             CarImageRepository carImageRepository, ImageMapper imageMapper, DomainEventPublisher publisher, SimpleEventPublisher publisher1) {
         this.carListingRepository = carListingRepository;
         this.carListingMapper = carListingMapper;
         this.carImageRepository = carImageRepository;
         this.imageMapper = imageMapper;
-        this.publisher = publisher;
+
+        this.publisher = publisher1;
     }
 
     public CarListingResponse listCar(CreateCarListingRequest request) {
@@ -75,6 +78,8 @@ public class CarListingService {
                 .build();
 
         carImageRepository.save(image);
+
+        submitForApproval(UUID.fromString(listingId));
 
         return CarImageResponse.builder()
                 .id(image.getId())
