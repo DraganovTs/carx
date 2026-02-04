@@ -6,7 +6,10 @@
 
   <main class="admin-content">
     @if (isLoading) {
-      <div class="loading">Loading pending cars...</div>
+      <div class="loading">
+        <div class="spinner"></div>
+        <p>Loading pending cars...</p>
+      </div>
     } @else if (error) {
       <div class="error">{{ error }}</div>
     } @else {
@@ -14,21 +17,30 @@
         @for (car of pendingCars; track car.id) {
           <div class="car-card pending">
             <div class="card-image">
-              <img [src]="car.mainImageUrl || 'assets/default-car.jpg'" [alt]="car.title" />
+              <img 
+                [src]="car.mainImageUrl || 'assets/default-car.jpg'" 
+                [alt]="car.title" 
+                (click)="showCarDetails(car)"
+              />
               <div class="status-badge">PENDING</div>
+              <div class="submitted-at">
+                Submitted: {{ formatDate(car.submittedAt) }}
+              </div>
             </div>
             
             <div class="card-content">
               <h3>{{ car.title }}</h3>
+              <div class="car-meta">
+                <span class="brand-model">{{ car.brand }} {{ car.model }}</span>
+                <span class="price">{{ formatPrice(car.price) }}</span>
+              </div>
+              
               <div class="car-details">
-                <div class="detail">
-                  <strong>Price:</strong> ${{ formatPrice(car.price) }}
-                </div>
                 <div class="detail">
                   <strong>Year:</strong> {{ car.year }}
                 </div>
                 <div class="detail">
-                  <strong>Mileage:</strong> {{ car.mileage }} km
+                  <strong>Mileage:</strong> {{ car.mileage | number }} km
                 </div>
                 <div class="detail">
                   <strong>Location:</strong> {{ car.location }}
@@ -39,13 +51,13 @@
               </div>
               
               <div class="card-actions">
-                <button class="btn-view" (click)="viewCarDetails(car.id)">
+                <button class="btn-view" (click)="showCarDetails(car)">
                   View Details
                 </button>
-                <button class="btn-approve" (click)="approveCar(car.id)">
+                <button class="btn-approve" (click)="openApproveModal(car)">
                   Approve
                 </button>
-                <button class="btn-reject" (click)="rejectCar(car.id)">
+                <button class="btn-reject" (click)="openRejectModal(car)">
                   Reject
                 </button>
               </div>
@@ -53,10 +65,154 @@
           </div>
         } @empty {
           <div class="empty-state">
-            <p>No pending car approvals</p>
+            <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+              <path d="M19 17h2c.6 0 1-.4 1-1v-3c0-.9-.7-1.7-1.5-1.9C18.7 10.6 16 10 16 10s-1.3-2-3-2h-2c-1.7 0-3 1.3-3 3"/>
+              <path d="M5 17H3c-.6 0-1-.4-1-1v-3c0-.9.7-1.7 1.5-1.9C5.3 10.6 8 10 8 10s1.3-2 3-2h2c1.7 0 3 1.3 3 3v6"/>
+              <circle cx="7" cy="17" r="2"/>
+              <circle cx="17" cy="17" r="2"/>
+            </svg>
+            <h3>All Clear!</h3>
+            <p>No pending car approvals at the moment.</p>
           </div>
         }
       </div>
     }
   </main>
+
+  <!-- Car Details Modal -->
+  @if (selectedCar && !showApprovalModal && !showRejectionModal) {
+    <div class="modal-overlay" (click)="closeModals()">
+      <div class="modal-content" (click)="$event.stopPropagation()">
+        <div class="modal-header">
+          <h2>{{ selectedCar.title }}</h2>
+          <button class="modal-close" (click)="closeModals()">×</button>
+        </div>
+        <div class="modal-body">
+          <div class="modal-image">
+            <img [src]="selectedCar.mainImageUrl || 'assets/default-car.jpg'" [alt]="selectedCar.title" />
+          </div>
+          <div class="modal-details">
+            <div class="detail-section">
+              <h3>Car Information</h3>
+              <div class="detail-grid">
+                <div class="detail-item">
+                  <strong>Brand:</strong> {{ selectedCar.brand }}
+                </div>
+                <div class="detail-item">
+                  <strong>Model:</strong> {{ selectedCar.model }}
+                </div>
+                <div class="detail-item">
+                  <strong>Year:</strong> {{ selectedCar.year }}
+                </div>
+                <div class="detail-item">
+                  <strong>Price:</strong> {{ formatPrice(selectedCar.price) }}
+                </div>
+                <div class="detail-item">
+                  <strong>Mileage:</strong> {{ selectedCar.mileage | number }} km
+                </div>
+                <div class="detail-item">
+                  <strong>Location:</strong> {{ selectedCar.location }}
+                </div>
+                <div class="detail-item">
+                  <strong>Submitted:</strong> {{ formatDate(selectedCar.submittedAt) }}
+                </div>
+                <div class="detail-item">
+                  <strong>Seller:</strong> {{ selectedCar.userEmail }}
+                </div>
+              </div>
+            </div>
+            
+            <div class="detail-section" *ngIf="selectedCar.description">
+              <h3>Description</h3>
+              <p>{{ selectedCar.description }}</p>
+            </div>
+            
+            <div class="modal-actions">
+              <button class="btn-approve" (click)="openApproveModal(selectedCar)">
+                Approve This Listing
+              </button>
+              <button class="btn-reject" (click)="openRejectModal(selectedCar)">
+                Reject This Listing
+              </button>
+              <button class="btn-cancel" (click)="closeModals()">
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  }
+
+  <!-- Approve Modal -->
+  @if (showApprovalModal && selectedCar) {
+    <div class="modal-overlay" (click)="closeModals()">
+      <div class="modal-content approve-modal" (click)="$event.stopPropagation()">
+        <div class="modal-header">
+          <h2>Approve Listing</h2>
+          <button class="modal-close" (click)="closeModals()">×</button>
+        </div>
+        <div class="modal-body">
+          <p>Are you sure you want to approve this car listing?</p>
+          
+          <div class="form-group">
+            <label for="approveComment">Comment (Optional):</label>
+            <textarea 
+              id="approveComment" 
+              [(ngModel)]="approvalComment" 
+              placeholder="Add any notes or comments about this approval..."
+              rows="3"
+            ></textarea>
+          </div>
+          
+          <div class="modal-actions">
+            <button class="btn-confirm" (click)="approveCar()" [disabled]="!selectedCar">
+              Confirm Approval
+            </button>
+            <button class="btn-cancel" (click)="closeModals()">
+              Cancel
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  }
+
+  <!-- Reject Modal -->
+  @if (showRejectionModal && selectedCar) {
+    <div class="modal-overlay" (click)="closeModals()">
+      <div class="modal-content reject-modal" (click)="$event.stopPropagation()">
+        <div class="modal-header">
+          <h2>Reject Listing</h2>
+          <button class="modal-close" (click)="closeModals()">×</button>
+        </div>
+        <div class="modal-body">
+          <p>Please provide a reason for rejecting this car listing:</p>
+          
+          <div class="form-group">
+            <label for="rejectReason">Rejection Reason *</label>
+            <textarea 
+              id="rejectReason" 
+              [(ngModel)]="rejectionReason" 
+              placeholder="Enter the reason for rejection..."
+              rows="4"
+              required
+            ></textarea>
+            <small class="form-hint">This reason will be sent to the seller</small>
+          </div>
+          
+          <div class="modal-actions">
+            <button class="btn-confirm reject" 
+                    (click)="rejectCar()" 
+                    [disabled]="!rejectionReason || !selectedCar">
+              Confirm Rejection
+            </button>
+            <button class="btn-cancel" (click)="closeModals()">
+              Cancel
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  }
 </div>

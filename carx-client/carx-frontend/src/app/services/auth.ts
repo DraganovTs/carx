@@ -73,6 +73,7 @@ export class AuthService {
       role: this.getRole()
     };
   }
+  
 
   getRoleFromToken(token: string): string | null {
   try {

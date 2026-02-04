@@ -11,7 +11,7 @@ import java.util.List;
 import java.util.UUID;
 
 @RestController
-@RequestMapping(value = "api/admin/moderations" , produces = MediaType.APPLICATION_JSON_VALUE)
+@RequestMapping(value = "/api/admin/moderations" , produces = MediaType.APPLICATION_JSON_VALUE)
 public class ModerationController {
 
     private final ModerationService moderationService;
@@ -20,12 +20,12 @@ public class ModerationController {
         this.moderationService = moderationService;
     }
 
-    @GetMapping("/pending")
+    @GetMapping("/cars/pending")
     public ResponseEntity<List<ListingModerationDTO>> pending(){
         return ResponseEntity.ok(moderationService.getPending());
     }
 
-    @PostMapping("/{id}/approve")
+    @PostMapping("/cars/{id}/approve")
     public ResponseEntity<Void> approve(
             @PathVariable UUID id,
             @RequestParam UUID adminId,
@@ -35,7 +35,7 @@ public class ModerationController {
         return ResponseEntity.ok().build();
     }
 
-    @PostMapping("/{id}/reject")
+    @PostMapping("/cars/{id}/reject")
     public ResponseEntity<Void> reject(
             @PathVariable UUID id,
             @RequestParam UUID adminId,
